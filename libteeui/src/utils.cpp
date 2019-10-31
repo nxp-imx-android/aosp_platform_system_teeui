@@ -19,6 +19,17 @@
 
 namespace teeui {
 
+bool operator==(const ByteBufferProxy& lhs, const ByteBufferProxy& rhs) {
+    if (lhs.size() == rhs.size()) {
+        auto lhsi = lhs.begin();
+        auto rhsi = rhs.begin();
+        while (lhsi != lhs.end()) {
+            if (*lhsi++ != *rhsi++) return false;
+        }
+    }
+    return true;
+}
+
 constexpr const DefaultNumericType kEpsilon = 0.000001;
 constexpr const DefaultNumericType kHalfSqrt2 = 0.70710678118;
 
