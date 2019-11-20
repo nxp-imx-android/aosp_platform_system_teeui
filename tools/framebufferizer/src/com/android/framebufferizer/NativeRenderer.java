@@ -16,11 +16,13 @@
 
 package com.android.framebufferizer;
 
+import com.android.framebufferizer.utils.DeviceInfo;
+
 public class NativeRenderer {
     static {
          System.loadLibrary("teeui_jni");
     }
 
-    public static native int setDeviceInfo(int width, int height, int colormodel, double dp2px, double mm2px);
+    public static native int setDeviceInfo(DeviceInfo deviceInfo, boolean magnified);
     public static native int renderBuffer(int x, int y, int width, int height, int lineStride, int[] buffer);
 }

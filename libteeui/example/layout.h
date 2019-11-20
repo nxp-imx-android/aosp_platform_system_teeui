@@ -135,8 +135,8 @@ LineHeight(DefaultFontSize() * 1.5_px);
 NumberOfLines(4);
 Dimension(LabelWidth, HeightFromLines);
 Position(BorderWidth, BottomOfScreen() - BorderWidth - dim_h);
-DefaultText("This confirmation provides an extra layer of security for the action that you're "
-            "about to take");
+DefaultText("This confirmation provides an extra layer of security for the action you're "
+            "about to take.");
 VerticallyCentered;
 TextColor(DefaultTextColor);
 Font(DefaultFont);
