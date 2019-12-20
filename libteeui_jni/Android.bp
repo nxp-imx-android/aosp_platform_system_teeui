@@ -6,5 +6,8 @@ cc_library_host_shared {
         "libteeui_jni.cpp",
     ],
     static_libs: [
+        "libft2.nodep",
+        "libteeui",
+        "libteeui_example_layout",
     ],
 }

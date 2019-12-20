@@ -16,6 +16,7 @@
  */
 
 #include <jni.h>
+#include <teeui/example/teeui.h>
 
 /*
  * JTypeTraits provides hints for JArray on how to access and free the array elements and how
