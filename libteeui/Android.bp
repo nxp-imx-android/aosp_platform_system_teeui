@@ -22,14 +22,17 @@ cc_library {
     defaults: ["keystore_defaults"],
     export_include_dirs: ["include"],
     srcs: [
+        "src/evdev.cpp",
         "src/generic_messages.cpp",
         "src/msg_formatting.cpp",
         "src/utils.cpp",
+        "src/weak_secure_input_device.cpp",
     ],
     shared_libs: [
         "android.hardware.confirmationui@1.0",
         "android.hardware.keymaster@4.0",
         "libhidlbase",
+        "libbase",
     ],
     host_supported: true,
     vendor_available: true,
