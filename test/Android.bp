@@ -1,0 +1,18 @@
+cc_test {
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-O0",
+    ],
+    srcs: [
+        "teeui_test.cpp",
+        "gtest_main.cpp",
+    ],
+    name: "teeui_unit_tests",
+    static_libs: [
+        "libteeui",
+        "libft2.nodep",
+    ],
+    host_supported: true,
+}
