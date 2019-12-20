@@ -1,0 +1,9 @@
+// Copyright 2019 The Android Open Source Project
+//
+
+java_binary_host {
+    name: "TeeuiFramebufferizer",
+    srcs: ["src/**/*.java"],
+    manifest: "manifest-teeui-framebufferizer.mf",
+}
+
