@@ -5,5 +5,8 @@ java_binary_host {
     name: "TeeuiFramebufferizer",
     srcs: ["src/**/*.java"],
     manifest: "manifest-teeui-framebufferizer.mf",
+    required: [
+        "libteeui_jni",
+    ]
 }
 
