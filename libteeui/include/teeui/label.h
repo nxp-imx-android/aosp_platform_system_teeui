@@ -101,7 +101,7 @@ template <typename Derived> class Label : public LayoutElement<Derived>, public 
     static const constexpr bool label_right_justified = false;
     static const constexpr bool label_vertically_centered = false;
     static const constexpr Color label_text_color = 0xff000000;
-    static const constexpr FontBuffer label_font = {};
+    static const constexpr int label_font = 0;
 
     Label() = default;
     template <typename Context>
@@ -111,7 +111,7 @@ template <typename Derived> class Label : public LayoutElement<Derived>, public 
               context = Derived::label_font_size, context = Derived::label_line_height,
               {&Derived::label_text[0], &Derived::label_text[sizeof(Derived::label_text) - 1]},
               Derived::label_right_justified, Derived::label_vertically_centered,
-              Derived::label_text_color, Derived::label_font) {}
+              Derived::label_text_color, getFont(Derived::label_font)) {}
 
     Error draw(const PixelDrawer& drawPixel) {
         LabelImpl::LineInfo::info_t lines[Derived::label_number_of_lines];
@@ -138,8 +138,12 @@ template <typename Derived> class Label : public LayoutElement<Derived>, public 
 
 #define TextColor(color) static const constexpr Color label_text_color = color
 
-#define FONT(buffer, ...) FontBuffer(buffer, ##__VA_ARGS__)
+#define FONT(name) TEEUI_FONT_##name()
 
-#define Font(fontbuffer) static const constexpr FontBuffer label_font = fontbuffer
+#define DECLARE_FONT_BUFFER(name, buffer, ...)                                                     \
+    struct TEEUI_FONT_##name {};                                                                   \
+    inline FontBuffer getFont(TEEUI_FONT_##name) { return FontBuffer(buffer, ##__VA_ARGS__); }
+
+#define Font(fontbuffer) static const constexpr auto label_font = fontbuffer
 
 #endif  // LIBTEEUI_LABEL_H_
