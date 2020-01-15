@@ -25,4 +25,6 @@ public class NativeRenderer {
 
     public static native int setDeviceInfo(DeviceInfo deviceInfo, boolean magnified);
     public static native int renderBuffer(int x, int y, int width, int height, int lineStride, int[] buffer);
+    public static native void setLanguage(String language_id);
+    public static native String[] getLanguageIdList();
 }
