@@ -19,10 +19,12 @@
 #define TEEUI_LIBTEEUI_UTILS_H_
 
 #include <math.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 
 #include <algorithm>
+#include <initializer_list>
 #include <optional>
 #include <tuple>
 #include <type_traits>
@@ -33,6 +35,135 @@
 namespace teeui {
 
 using std::optional;
+
+template <typename T, size_t elements> class Array {
+    using array_type = T[elements];
+
+  public:
+    constexpr Array() : data_{} {}
+    constexpr Array(const T (&data)[elements]) { std::copy(data, data + elements, data_); }
+    constexpr Array(const std::initializer_list<uint8_t>& li) {
+        size_t i = 0;
+        for (auto& item : li) {
+            data_[i] = item;
+            ++i;
+            if (i == elements) break;
+        }
+        for (; i < elements; ++i) {
+            data_[i] = {};
+        }
+    }
+
+    T* data() { return data_; }
+    const T* data() const { return data_; }
+    constexpr size_t size() const { return elements; }
+
+    T* begin() { return data_; }
+    T* end() { return data_ + elements; }
+    const T* begin() const { return data_; }
+    const T* end() const { return data_ + elements; }
+
+    static constexpr Array fill(const T& v) {
+        Array result;
+        for (size_t i = 0; i < elements; ++i) {
+            result.data_[i] = v;
+        }
+        return result;
+    }
+
+  private:
+    array_type data_;
+};
+
+template <typename T> auto bytesCast(const T& v) -> const uint8_t (&)[sizeof(T)] {
+    return *reinterpret_cast<const uint8_t(*)[sizeof(T)]>(&v);
+}
+template <typename T> auto bytesCast(T& v) -> uint8_t (&)[sizeof(T)] {
+    return *reinterpret_cast<uint8_t(*)[sizeof(T)]>(&v);
+}
+
+class ByteBufferProxy {
+    template <typename T> struct has_data {
+        template <typename U> static int f(const U*, const void*) { return 0; }
+        template <typename U> static int* f(const U* u, decltype(u->data())) { return nullptr; }
+        static constexpr bool value = std::is_pointer<decltype(f((T*)nullptr, ""))>::value;
+    };
+
+  public:
+    template <typename T>
+    ByteBufferProxy(const T& buffer, decltype(buffer.data()) = nullptr)
+        : data_(reinterpret_cast<const uint8_t*>(buffer.data())), size_(buffer.size()) {
+        static_assert(sizeof(decltype(*buffer.data())) == 1, "elements to large");
+    }
+
+    template <size_t size>
+    ByteBufferProxy(const char (&buffer)[size])
+        : data_(reinterpret_cast<const uint8_t*>(buffer)), size_(size - 1) {
+        static_assert(size > 0, "even an empty string must be 0-terminated");
+    }
+
+    template <size_t size>
+    ByteBufferProxy(const uint8_t (&buffer)[size]) : data_(buffer), size_(size) {}
+
+    ByteBufferProxy() : data_(nullptr), size_(0) {}
+
+    const uint8_t* data() const { return data_; }
+    size_t size() const { return size_; }
+
+    const uint8_t* begin() const { return data_; }
+    const uint8_t* end() const { return data_ + size_; }
+
+  private:
+    const uint8_t* data_;
+    size_t size_;
+};
+
+constexpr const uint8_t kAuthTokenKeySize = 32;
+constexpr const uint8_t kHmacKeySize = kAuthTokenKeySize;
+using AuthTokenKey = Array<uint8_t, kAuthTokenKeySize>;
+using Hmac = AuthTokenKey;
+
+/**
+ * Implementer are expected to provide an implementation with the following prototype:
+ *  static optional<array<uint8_t, 32>> hmac256(const uint8_t key[32],
+ *                                     std::initializer_list<ByteBufferProxy> buffers);
+ */
+template <typename Impl> class HMac {
+  public:
+    template <typename... Data>
+    static optional<Hmac> hmac256(const AuthTokenKey& key, const Data&... data) {
+        return Impl::hmac256(key, {data...});
+    }
+};
+
+bool operator==(const ByteBufferProxy& lhs, const ByteBufferProxy& rhs);
+
+template <typename IntType, uint32_t byteOrder> struct choose_hton;
+
+template <typename IntType> struct choose_hton<IntType, __ORDER_LITTLE_ENDIAN__> {
+    inline static IntType hton(const IntType& value) {
+        IntType result = {};
+        const unsigned char* inbytes = reinterpret_cast<const unsigned char*>(&value);
+        unsigned char* outbytes = reinterpret_cast<unsigned char*>(&result);
+        for (int i = sizeof(IntType) - 1; i >= 0; --i) {
+            *(outbytes++) = inbytes[i];
+        }
+        return result;
+    }
+};
+
+template <typename IntType> struct choose_hton<IntType, __ORDER_BIG_ENDIAN__> {
+    inline static IntType hton(const IntType& value) { return value; }
+};
+
+template <typename IntType> inline IntType hton(const IntType& value) {
+    return choose_hton<IntType, __BYTE_ORDER__>::hton(value);
+}
+
+template <typename IntType> inline IntType ntoh(const IntType& value) {
+    // same operation as hton
+    return choose_hton<IntType, __BYTE_ORDER__>::hton(value);
+}
 
 enum class Unit : uint8_t {
     PX,
