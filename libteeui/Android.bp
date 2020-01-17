@@ -17,3 +17,21 @@ cc_library_static {
     ],
 }
 
+cc_library {
+    name: "libteeui_hal_support",
+    defaults: ["keystore_defaults"],
+    export_include_dirs: ["include"],
+    srcs: [
+        "src/generic_messages.cpp",
+        "src/msg_formatting.cpp",
+        "src/utils.cpp",
+    ],
+    shared_libs: [
+        "android.hardware.confirmationui@1.0",
+        "android.hardware.keymaster@4.0",
+        "libhidlbase",
+    ],
+    host_supported: true,
+    vendor_available: true,
+}
+
