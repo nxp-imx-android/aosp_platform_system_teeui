@@ -126,10 +126,10 @@ using JString = JArray<jstring>;
 /*
  * Class:     com_android_framebufferizer_NativeRenderer
  * Method:    setDeviceInfo
- * Signature: (Lcom/android/framebufferizer/utils/DeviceInfo;Z)I
+ * Signature: (Lcom/android/framebufferizer/utils/DeviceInfo;ZZ)I
  */
 extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_setDeviceInfo(
-    JNIEnv* env, jclass, jobject jDeviceInfo, jboolean magnified) {
+    JNIEnv* env, jclass, jobject jDeviceInfo, jboolean magnified, jboolean inverted) {
     jclass cDeviceInfo = env->FindClass("Lcom/android/framebufferizer/utils/DeviceInfo;");
     jmethodID method = env->GetMethodID(cDeviceInfo, "getWidthPx", "()I");
     DeviceInfo device_info;
@@ -148,7 +148,7 @@ extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRendere
     device_info.volUpButtonTopMm_ = env->CallDoubleMethod(jDeviceInfo, method);
     method = env->GetMethodID(cDeviceInfo, "getVolUpButtonBottomMm", "()D");
     device_info.volUpButtonBottomMm_ = env->CallDoubleMethod(jDeviceInfo, method);
-    return setDeviceInfo(device_info, magnified);
+    return setDeviceInfo(device_info, magnified, inverted);
 }
 
 /*
@@ -165,8 +165,9 @@ extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRendere
                               (uint32_t)lineStride, (uint32_t*)buffer.begin(), buffer.size());
 }
 /*
- * Class:     com_android_framebufferizer_NativeRenderer_setLanguage
- * Method:    setLanguage
+ * Class:     com_android_confirmationui_Translation_selectLangID
+ * Method:    selectLangID
+ * Signature: (Ljava/lang/String;)V
  */
 extern "C" JNIEXPORT void JNICALL
 Java_com_android_framebufferizer_NativeRenderer_setLanguage(JNIEnv* env, jclass, jstring jlang_id) {
@@ -176,8 +177,9 @@ Java_com_android_framebufferizer_NativeRenderer_setLanguage(JNIEnv* env, jclass,
     (env)->ReleaseStringUTFChars(jlang_id, lang_id);
 }
 /*
- * Class:     com_android_framebufferizer_NativeRenderer_getLanguageIdList
- * Method:    getLanguageIdList
+ * Class:     com_android_confirmationui_Translation_selectLangID
+ * Method:    selectLangID
+ * Signature: ()[Ljava/lang/String;
  */
 extern "C" JNIEXPORT jobjectArray JNICALL
 Java_com_android_framebufferizer_NativeRenderer_getLanguageIdList(JNIEnv* env, jclass) {
@@ -193,4 +195,15 @@ Java_com_android_framebufferizer_NativeRenderer_getLanguageIdList(JNIEnv* env, j
         env->SetObjectArrayElement(language_ids, i, env->NewStringUTF(native_data[i]));
 
     return language_ids;
+}
+/*
+ * Class:     com_android_framebufferizer_NativeRenderer
+ * Method:    setConfimationMessage
+ * Signature: (Ljava/lang/String;)V
+ */
+extern "C" JNIEXPORT void JNICALL
+Java_com_android_framebufferizer_NativeRenderer_setConfimationMessage(
+    JNIEnv* env, jclass, jstring jConfirmationMessage) {
+    JString confirmationMessage(env, jConfirmationMessage);
+    setConfirmationMessage(confirmationMessage.begin());
 }
