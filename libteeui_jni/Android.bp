@@ -9,5 +9,6 @@ cc_library_host_shared {
         "libft2.nodep",
         "libteeui",
         "libteeui_example_layout",
+        "libteeui_localization",
     ],
 }
