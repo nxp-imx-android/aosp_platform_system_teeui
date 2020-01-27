@@ -38,12 +38,14 @@ public class Main {
         theFramebuffer.setFrame(theFrame);
         FrameBufferBuffer.MagnifiedView magnifiedView = theFramebuffer.getMagnifiedView();
         FrameBufferBuffer.DeviceSelector deviceSelector = theFramebuffer.getDeviceSelector();
+        FrameBufferBuffer.LanguageSelector languageSelector = theFramebuffer.getLanguageSelector();
         magnifiedView.setPreferredSize(new Dimension(100, 100));
         magnifiedView.setMinimumSize(new Dimension(100, 100));
         magnifiedView.setMaximumSize(new Dimension(100, 100));
         theFrame.getContentPane().add(magnifiedView, BorderLayout.EAST);
         theFrame.getContentPane().add(theFramebuffer, BorderLayout.CENTER);
         theFrame.getContentPane().add(deviceSelector, BorderLayout.NORTH);
+        theFrame.getContentPane().add(languageSelector, BorderLayout.SOUTH);
         theFrame.pack();
         theFrame.setVisible(true);
         deviceSelector.refreshSelections();
