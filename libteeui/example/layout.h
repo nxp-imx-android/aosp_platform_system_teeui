@@ -71,6 +71,7 @@ RightJustified;
 VerticallyCentered;
 TextColor(DefaultTextColor);
 Font(DefaultFont);
+TextID(1424834532030812203);
 END_ELEMENT();
 
 BEGIN_ELEMENT(IconPower, teeui::Button, ConvexObjectCount(2))
@@ -95,6 +96,7 @@ RightJustified;
 VerticallyCentered;
 TextColor(DefaultTextColor);
 Font(DefaultFont);
+TextID(1796282799666106567);
 END_ELEMENT();
 
 BEGIN_ELEMENT(IconVolUp, teeui::Button, ConvexObjectCount(2))
@@ -127,6 +129,7 @@ DefaultText("Android Protected Confirmation");
 Font(DefaultFont);
 VerticallyCentered;
 TextColor(DefaultTextColor);
+TextID(6973195374358399966);
 END_ELEMENT();
 
 BEGIN_ELEMENT(LabelHint, teeui::Label)
@@ -140,6 +143,7 @@ DefaultText("This confirmation provides an extra layer of security for the actio
 VerticallyCentered;
 TextColor(DefaultTextColor);
 Font(DefaultFont);
+TextID(217688588483778177);
 END_ELEMENT();
 
 BEGIN_ELEMENT(LabelBody, teeui::Label)
@@ -148,12 +152,7 @@ LineHeight(BodyFontSize() * 1.4_px);
 NumberOfLines(20);
 Position(BorderWidth, BOTTOM_EDGE_OF(LabelTitle) + 24_dp);
 Dimension(LabelWidth, LabelHint::pos_y - pos_y - 24_dp);
-DefaultText(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut "
-    "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco "
-    "laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in "
-    "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat "
-    "cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+DefaultText("Confirmation Message");
 TextColor(DefaultTextColor);
 Font(DefaultFont);
 END_ELEMENT();
@@ -161,6 +160,7 @@ END_ELEMENT();
 NEW_LAYOUT(ConfUILayout, LabelOK, IconPower, LabelCancel, IconVolUp, IconShield, LabelTitle,
            LabelHint, LabelBody);
 
+// LABELS(ConfUILabels, LabelOK, LabelCancel, LabelTitle, LabelHint, LabelBody);
 }  // namespace teeui
 
 #endif  // TEEUI_LIBTEEUI_EXAMPLE_LAYOUT_H_
