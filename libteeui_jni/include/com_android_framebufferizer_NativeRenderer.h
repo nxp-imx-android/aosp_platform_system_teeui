@@ -25,6 +25,20 @@ JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_setDevice
 JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_renderBuffer(
     JNIEnv*, jclass, jint, jint, jint, jint, jint, jintArray);
 
+/*
+ * Class:     com_android_framebufferizer_NativeRenderer_setLanguage
+ * Method:    setLanguage
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT void JNICALL Java_com_android_framebufferizer_NativeRenderer_setLanguage(JNIEnv*, jclass,
+                                                                                   jstring);
+/*
+ * Class:     com_android_framebufferizer_NativeRenderer_getLanguageIdList
+ * Method:    getLanguageIdList
+ */
+JNIEXPORT jobjectArray JNICALL
+Java_com_android_framebufferizer_NativeRenderer_getLanguageIdList(JNIEnv*, jclass);
+
 #ifdef __cplusplus
 }
 #endif

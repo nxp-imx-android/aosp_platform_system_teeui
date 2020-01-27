@@ -14,9 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "layout.h"
+#include <cassert>
+#include <iostream>
+#include <localization/ConfirmationUITranslations.h>
 #include <teeui/example/teeui.h>
+#include <typeinfo>
 
 using namespace teeui;
 
@@ -39,18 +42,6 @@ template <typename T> uint32_t renderPixel(uint32_t x, uint32_t y, const T& e) {
     return e.bounds_.drawPoint(Point<pxs>(x, y));
 }
 
-template <typename... Elements>
-uint32_t renderPixel(uint32_t x, uint32_t y, const std::tuple<Elements...>& layout) {
-    uint32_t intensity = (x * 256) / device_width_px;
-    uint32_t acc = (intensity & 0xff) << 16 | (intensity & 0xff) << 8 | (intensity & 0xff);
-    for (uint32_t value : {renderPixel(x, y, std::get<Elements>(layout))...}) {
-        double alfa = (value & 0xff000000) >> 24;
-        alfa /= 255.0;
-        acc = alfaCombineChannel(0, alfa, value, acc) | alfaCombineChannel(8, alfa, value, acc) |
-              alfaCombineChannel(16, alfa, value, acc);
-    }
-    return acc;
-}
 
 struct FrameBuffer {
     uint32_t left_;
@@ -90,6 +81,23 @@ uint32_t setDeviceInfo(DeviceInfo deviceInfo, bool magnified) {
     return 0;
 }
 
+void selectLanguage(const char* language_id) {
+    ConfirmationUITranslations_select_lang_id(language_id);
+}
+
+void translate(LabelImpl* label) {
+    uint64_t textId = label->textId();
+    const char* translation = ConfirmationUITranslations_lookup(textId);
+    label->setText({&translation[0], &translation[strlen(translation)]});
+}
+
+template <typename... Elements> void translateLabels(std::tuple<Elements...>& layout) {
+    translate(&std::get<LabelOK>(layout));
+    translate(&std::get<LabelCancel>(layout));
+    translate(&std::get<LabelTitle>(layout));
+    translate(&std::get<LabelHint>(layout));
+}
+
 uint32_t renderUIIntoBuffer(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t lineStride,
                             uint32_t* buffer, size_t buffer_size_in_elements_not_bytes) {
     uint32_t afterLastPixelIndex = 0;
@@ -117,6 +125,8 @@ uint32_t renderUIIntoBuffer(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint
     }
 
     auto layoutInstance = instantiateLayout(ConfUILayout(), conv);
+
+    translateLabels(layoutInstance);
 
     uint32_t* begin = buffer + (y * lineStride + x);
     for (uint32_t yi = 0; yi < h; ++yi) {

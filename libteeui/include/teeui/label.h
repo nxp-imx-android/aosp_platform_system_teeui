@@ -65,12 +65,12 @@ class LabelImpl {
 
     LabelImpl()
         : fontSize_(10_px), lineHeight_(12_px), text_{}, rightJustified_(false),
-          verticallyCentered_(false), textColor_(0), font_{} {}
+          verticallyCentered_(false), textColor_(0), font_{}, textId_(0) {}
     LabelImpl(pxs fontSize, pxs lineHeight, text_t text, bool rightJustified,
-              bool verticallyCentered, Color textColor, FontBuffer font)
+              bool verticallyCentered, Color textColor, FontBuffer font, uint64_t textId)
         : fontSize_(fontSize), lineHeight_(lineHeight), text_(text),
           rightJustified_(rightJustified), verticallyCentered_(verticallyCentered),
-          textColor_(textColor), font_(font) {}
+          textColor_(textColor), font_(font), textId_(textId) {}
 
     pxs fontSize() const { return fontSize_; }
 
@@ -78,6 +78,7 @@ class LabelImpl {
     void setTextColor(Color color) { textColor_ = color; }
 
     text_t text() const { return text_; }
+    uint64_t textId() const { return textId_; }
 
     Error draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds, LineInfo* lineInfo);
 
@@ -89,6 +90,7 @@ class LabelImpl {
     bool verticallyCentered_;
     Color textColor_;
     FontBuffer font_;
+    uint64_t textId_;
 };
 
 /**
@@ -102,6 +104,7 @@ template <typename Derived> class Label : public LayoutElement<Derived>, public 
     static const constexpr bool label_vertically_centered = false;
     static const constexpr Color label_text_color = 0xff000000;
     static const constexpr int label_font = 0;
+    static const constexpr uint64_t text_id = 0;
 
     Label() = default;
     template <typename Context>
@@ -111,7 +114,7 @@ template <typename Derived> class Label : public LayoutElement<Derived>, public 
               context = Derived::label_font_size, context = Derived::label_line_height,
               {&Derived::label_text[0], &Derived::label_text[sizeof(Derived::label_text) - 1]},
               Derived::label_right_justified, Derived::label_vertically_centered,
-              Derived::label_text_color, getFont(Derived::label_font)) {}
+              Derived::label_text_color, getFont(Derived::label_font), Derived::text_id) {}
 
     Error draw(const PixelDrawer& drawPixel) {
         LabelImpl::LineInfo::info_t lines[Derived::label_number_of_lines];
@@ -145,5 +148,7 @@ template <typename Derived> class Label : public LayoutElement<Derived>, public 
     inline FontBuffer getFont(TEEUI_FONT_##name) { return FontBuffer(buffer, ##__VA_ARGS__); }
 
 #define Font(fontbuffer) static const constexpr auto label_font = fontbuffer
+
+#define TextID(tid) static const constexpr uint64_t text_id = tid
 
 #endif  // LIBTEEUI_LABEL_H_

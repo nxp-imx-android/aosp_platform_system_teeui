@@ -917,4 +917,6 @@ template <typename Iterator> Range<Iterator> makeRange(Iterator begin, Iterator 
 
 #define NEW_PARAMETER_SET(name, ...) using name = ::teeui::MetaList<__VA_ARGS__>
 
+#define LABELS(name, ...) using ::teeui::MetaList<__VA_ARGS__>
+
 #endif  // TEEUI_LIBTEEUI_UTILS_H_
