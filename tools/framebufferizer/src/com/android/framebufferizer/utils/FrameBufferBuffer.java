@@ -23,6 +23,10 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -83,15 +87,57 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
 
     }
 
+    public static enum Devices { CORAL, BONITO, SARGO, CROSSHATCH, BLUELINE;}
+
+    public class DeviceSelector extends JPanel implements ActionListener {
+        private JComboBox<String> dropDownMenu = new JComboBox(DeviceInfoDB.Device.values());
+        private JCheckBox magnifiedCheckbox = new JCheckBox("Magnified");
+
+        protected DeviceSelector() {
+            dropDownMenu.addActionListener(this);
+            magnifiedCheckbox.addActionListener(this);
+            this.add(dropDownMenu);
+            this.add(magnifiedCheckbox);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            synchronized (this) {
+                FrameBufferBuffer.this.calibrateNativeBuffer();
+            }
+        }
+
+        public void refreshSelections(){
+            dropDownMenu.setSelectedItem(Devices.CORAL);
+        }
+
+        public DeviceInfoDB.Device currentDevice() {
+            return (DeviceInfoDB.Device) dropDownMenu.getSelectedItem();
+        }
+
+        public boolean magnified() {
+            return magnifiedCheckbox.isSelected();
+        }
+    }
+
+
     private BufferedImage mImage;
     private DataBufferInt mBuffer;
     private MagnifiedView mMagnifiedView;
+    private DeviceSelector mDeviceSelector;
+    private JFrame mFrame;
 
     public MagnifiedView getMagnifiedView() {
         if (mMagnifiedView == null) {
             mMagnifiedView = new MagnifiedView();
         }
         return mMagnifiedView;
+    }
+
+    public DeviceSelector getDeviceSelector(){
+        if (mDeviceSelector == null){
+            mDeviceSelector = new DeviceSelector();
+        }
+        return mDeviceSelector;
     }
 
     @Override
@@ -128,63 +174,42 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
     }
 
 
-    protected FrameBufferBuffer(BufferedImage image, DataBufferInt buffer) {
-        mImage = image;
-        mBuffer = buffer;
+    public FrameBufferBuffer() {
+        setSize(412, 900);
+        setPreferredSize(new Dimension(412, 900));
+        calibrateNativeBuffer();
         addComponentListener(this);
         addMouseMotionListener(this);
     }
 
-    public static FrameBufferBuffer createFrameBufferBuffer(int w, int h, int linestride) {
-        final int rMask = 0xff;
-        final int gMask = 0xff00;
-        final int bMask = 0xff0000;
-        final int bpp = 24;
-        DataBufferInt dataBuffer = new DataBufferInt(h * linestride);
-        WritableRaster raster = Raster.createPackedRaster(dataBuffer, w, h, linestride,
-                new int[]{rMask, gMask, bMask}, null);
-        ColorModel colorModel = new DirectColorModel(bpp, rMask, gMask, bMask);
-        BufferedImage image = new BufferedImage(colorModel, raster, true, null);
-        NativeRenderer.setDeviceInfo(w, h, -1, 3.5, 5.5);
-        int error = NativeRenderer.renderBuffer(0, 0, w, h, linestride, dataBuffer.getData());
-        if (error != 0) {
-            System.out.println("Error rendering native buffer " + error);
-        }
-        return new FrameBufferBuffer(image, dataBuffer);
-    }
-
-    public BufferedImage getImage() {
-        return mImage;
-    }
-
-    public DataBufferInt getBuffer() {
-        return mBuffer;
-    }
-
     @Override
     public void componentResized(ComponentEvent e) {
-        int w = getWidth();
-        int h = getHeight();
-        final int linestride = w;
-        final int rMask = 0xff;
-        final int gMask = 0xff00;
-        final int bMask = 0xff0000;
-        final int bpp = 24;
-        synchronized (this) {
-            mBuffer = new DataBufferInt(h * linestride);
-            WritableRaster raster = Raster.createPackedRaster(mBuffer, w, h, linestride,
-                    new int[]{rMask, gMask, bMask}, null);
-            ColorModel colorModel = new DirectColorModel(bpp, rMask, gMask, bMask);
-            mImage = new BufferedImage(colorModel, raster, true, null);
-            NativeRenderer.setDeviceInfo(w, h, -1, w/412.0, 5.5);
-            int error = NativeRenderer.renderBuffer(0, 0, w, h, linestride, mBuffer.getData());
-            if (error != 0) {
-                System.out.println("Error rendering native buffer " + error);
-            }
-        }
+        calibrateNativeBuffer();
         repaint();
+        /* get set values and then let it resize based off of the values passed through this */
+        // int w = getWidth();
+        // int h = getHeight();
+        // System.out.println( "width=" + getWidth() + " height=" + getHeight());
+        // final int linestride = w;
+        // final int rMask = 0xff;
+        // final int gMask = 0xff00;
+        // final int bMask = 0xff0000;
+        // final int bpp = 24;
+        // synchronized (this) {
+        //     mBuffer = new DataBufferInt(h * linestride);
+        //     WritableRaster raster = Raster.createPackedRaster(mBuffer, w, h, linestride,
+        //             new int[]{rMask, gMask, bMask}, null);
+        //     ColorModel colorModel = new DirectColorModel(bpp, rMask, gMask, bMask);
+        //     mDeviceSelector.mImage = new BufferedImage(colorModel, raster, true, null);
+        //     NativeRenderer.setDeviceInfo(w, h, -1, w/412.0, 5.5);
+        //     int error = NativeRenderer.renderBuffer(0, 0, w, h, linestride, mBuffer.getData());
+        //     if (error != 0) {
+        //         System.out.println("Error rendering native buffer " + error);
+        //     }
+        // }
+        // repaint();
+        // how to resize within ratio of everything
     }
-
     @Override
     public void componentMoved(ComponentEvent e) {
 
@@ -205,5 +230,42 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         synchronized (this) {
             g.drawImage(mImage, 0, 0, null);
         }
+    }
+
+    public void setFrame(JFrame frame){
+        mFrame = frame;
+    }
+
+    public void calibrateNativeBuffer(){
+        DeviceInfo deviceInfo = DeviceInfoDB.getDeviceInfo(getDeviceSelector().currentDevice());
+        boolean magnified = getDeviceSelector().magnified();
+        int w = deviceInfo.getWidthPx();
+        int h = deviceInfo.getHeightPx();
+        final int linestride = w;
+        final int rMask = 0xff;
+        final int gMask = 0xff00;
+        final int bMask = 0xff0000;
+        final int bpp = 24;
+        synchronized (this) {
+            mBuffer = new DataBufferInt(h * linestride);
+            WritableRaster raster = Raster.createPackedRaster(mBuffer, w, h, linestride,
+                new int[]{rMask, gMask, bMask}, null);
+            ColorModel colorModel = new DirectColorModel(bpp, rMask, gMask, bMask);
+            BufferedImage image = new BufferedImage(colorModel, raster, true, null);
+            NativeRenderer.setDeviceInfo(deviceInfo, magnified);
+            int error = NativeRenderer.renderBuffer(0, 0, w, h, linestride, mBuffer.getData());
+            if (error != 0) {
+                System.out.println("Error rendering native buffer " + error);
+            }
+
+            mImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
+            Graphics2D gc = mImage.createGraphics();
+            double scale = (double)getWidth()/(double)w;
+            gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            gc.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            gc.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            gc.drawRenderedImage(image, AffineTransform.getScaleInstance(scale, scale));
+        }
+        repaint();
     }
 }
