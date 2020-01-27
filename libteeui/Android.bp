@@ -37,4 +37,3 @@ cc_library {
     host_supported: true,
     vendor_available: true,
 }
-
