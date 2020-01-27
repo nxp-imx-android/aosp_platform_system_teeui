@@ -87,7 +87,6 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
 
     }
 
-    public static enum Devices { CORAL, BONITO, SARGO, CROSSHATCH, BLUELINE;}
 
     public class DeviceSelector extends JPanel implements ActionListener {
         private JComboBox<String> dropDownMenu = new JComboBox(DeviceInfoDB.Device.values());
@@ -107,7 +106,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         }
 
         public void refreshSelections(){
-            dropDownMenu.setSelectedItem(Devices.CORAL);
+            dropDownMenu.setSelectedItem(DeviceInfoDB.Device.CORAL);
         }
 
         public DeviceInfoDB.Device currentDevice() {
@@ -119,11 +118,33 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         }
     }
 
+    public class LanguageSelector extends JPanel implements ActionListener {
+        String languages [] = NativeRenderer.getLanguageIdList();
+
+        private JComboBox<String> dropDownMenu;
+
+        protected LanguageSelector() {
+            dropDownMenu = new JComboBox(languages);
+            dropDownMenu.addActionListener(this);
+            this.add(dropDownMenu);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            synchronized (this) {
+                String language = (String) dropDownMenu.getSelectedItem();
+                NativeRenderer.setLanguage(language);
+                FrameBufferBuffer.this.calibrateNativeBuffer();
+            }
+        }
+
+    }
+
 
     private BufferedImage mImage;
     private DataBufferInt mBuffer;
     private MagnifiedView mMagnifiedView;
     private DeviceSelector mDeviceSelector;
+    private LanguageSelector mLanguageSelector;
     private JFrame mFrame;
 
     public MagnifiedView getMagnifiedView() {
@@ -138,6 +159,13 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             mDeviceSelector = new DeviceSelector();
         }
         return mDeviceSelector;
+    }
+
+    public LanguageSelector getLanguageSelector(){
+        if (mLanguageSelector == null){
+            mLanguageSelector = new LanguageSelector();
+        }
+        return mLanguageSelector;
     }
 
     @Override
@@ -186,29 +214,6 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
     public void componentResized(ComponentEvent e) {
         calibrateNativeBuffer();
         repaint();
-        /* get set values and then let it resize based off of the values passed through this */
-        // int w = getWidth();
-        // int h = getHeight();
-        // System.out.println( "width=" + getWidth() + " height=" + getHeight());
-        // final int linestride = w;
-        // final int rMask = 0xff;
-        // final int gMask = 0xff00;
-        // final int bMask = 0xff0000;
-        // final int bpp = 24;
-        // synchronized (this) {
-        //     mBuffer = new DataBufferInt(h * linestride);
-        //     WritableRaster raster = Raster.createPackedRaster(mBuffer, w, h, linestride,
-        //             new int[]{rMask, gMask, bMask}, null);
-        //     ColorModel colorModel = new DirectColorModel(bpp, rMask, gMask, bMask);
-        //     mDeviceSelector.mImage = new BufferedImage(colorModel, raster, true, null);
-        //     NativeRenderer.setDeviceInfo(w, h, -1, w/412.0, 5.5);
-        //     int error = NativeRenderer.renderBuffer(0, 0, w, h, linestride, mBuffer.getData());
-        //     if (error != 0) {
-        //         System.out.println("Error rendering native buffer " + error);
-        //     }
-        // }
-        // repaint();
-        // how to resize within ratio of everything
     }
     @Override
     public void componentMoved(ComponentEvent e) {
@@ -237,8 +242,12 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
     }
 
     public void calibrateNativeBuffer(){
-        DeviceInfo deviceInfo = DeviceInfoDB.getDeviceInfo(getDeviceSelector().currentDevice());
-        boolean magnified = getDeviceSelector().magnified();
+      DeviceInfo deviceInfo = DeviceInfoDB.getDeviceInfo(getDeviceSelector().currentDevice());
+      boolean magnified = getDeviceSelector().magnified();
+      renderNativeBuffer(deviceInfo, magnified);
+      repaint();
+    }
+    public int renderNativeBuffer(DeviceInfo deviceInfo, boolean magnified){
         int w = deviceInfo.getWidthPx();
         int h = deviceInfo.getHeightPx();
         final int linestride = w;
@@ -246,6 +255,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         final int gMask = 0xff00;
         final int bMask = 0xff0000;
         final int bpp = 24;
+        int error = 0;
         synchronized (this) {
             mBuffer = new DataBufferInt(h * linestride);
             WritableRaster raster = Raster.createPackedRaster(mBuffer, w, h, linestride,
@@ -253,7 +263,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             ColorModel colorModel = new DirectColorModel(bpp, rMask, gMask, bMask);
             BufferedImage image = new BufferedImage(colorModel, raster, true, null);
             NativeRenderer.setDeviceInfo(deviceInfo, magnified);
-            int error = NativeRenderer.renderBuffer(0, 0, w, h, linestride, mBuffer.getData());
+            error = NativeRenderer.renderBuffer(0, 0, w, h, linestride, mBuffer.getData());
             if (error != 0) {
                 System.out.println("Error rendering native buffer " + error);
             }
@@ -266,6 +276,6 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             gc.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             gc.drawRenderedImage(image, AffineTransform.getScaleInstance(scale, scale));
         }
-        repaint();
+        return error;
     }
 }
