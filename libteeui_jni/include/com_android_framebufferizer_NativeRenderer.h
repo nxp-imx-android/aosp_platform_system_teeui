@@ -10,10 +10,12 @@ extern "C" {
 /*
  * Class:     com_android_framebufferizer_NativeRenderer
  * Method:    setDeviceInfo
- * Signature: (IIIDD)I
+ * Signature: (Lcom/android/framebufferizer/utils/DeviceInfo;Z)I
  */
-JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_setDeviceInfo(
-    JNIEnv*, jclass, jint, jint, jint, jdouble, jdouble);
+JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_setDeviceInfo(JNIEnv*,
+                                                                                     jclass,
+                                                                                     jobject,
+                                                                                     jboolean);
 
 /*
  * Class:     com_android_framebufferizer_NativeRenderer

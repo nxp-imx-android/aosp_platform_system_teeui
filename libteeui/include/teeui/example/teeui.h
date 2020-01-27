@@ -21,8 +21,18 @@
 #include <stddef.h>
 #include <stdint.h>
 
-uint32_t setDeviceInfo(uint32_t width, uint32_t height, uint32_t colormodel, double dp2px,
-                       double mm2px);
+struct DeviceInfo {
+    uint32_t width_;
+    uint32_t height_;
+    double dp2px_;
+    double mm2px_;
+    double powerButtonTopMm_;
+    double powerButtonBottomMm_;
+    double volUpButtonTopMm_;
+    double volUpButtonBottomMm_;
+};
+
+uint32_t setDeviceInfo(DeviceInfo device_info, bool magnified);
 uint32_t renderUIIntoBuffer(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t lineStride,
                             uint32_t* buffer, size_t buffer_size_in_elements_not_bytes);
 

@@ -125,11 +125,29 @@ using JString = JArray<jstring>;
 /*
  * Class:     com_android_framebufferizer_NativeRenderer
  * Method:    setDeviceInfo
- * Signature: (IIIDD)I
+ * Signature: (Lcom/android/framebufferizer/utils/DeviceInfo;Z)I
  */
 extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_setDeviceInfo(
-    JNIEnv*, jclass, jint width, jint height, jint colormodel, jdouble dp2px, jdouble mm2px) {
-    return setDeviceInfo(width, height, colormodel, dp2px, mm2px);
+    JNIEnv* env, jclass, jobject jDeviceInfo, jboolean magnified) {
+    jclass cDeviceInfo = env->FindClass("Lcom/android/framebufferizer/utils/DeviceInfo;");
+    jmethodID method = env->GetMethodID(cDeviceInfo, "getWidthPx", "()I");
+    DeviceInfo device_info;
+    device_info.width_ = env->CallIntMethod(jDeviceInfo, method);
+    method = env->GetMethodID(cDeviceInfo, "getHeightPx", "()I");
+    device_info.height_ = env->CallIntMethod(jDeviceInfo, method);
+    method = env->GetMethodID(cDeviceInfo, "getDp2px", "()D");
+    device_info.dp2px_ = env->CallDoubleMethod(jDeviceInfo, method);
+    method = env->GetMethodID(cDeviceInfo, "getMm2px", "()D");
+    device_info.mm2px_ = env->CallDoubleMethod(jDeviceInfo, method);
+    method = env->GetMethodID(cDeviceInfo, "getPowerButtonTopMm", "()D");
+    device_info.powerButtonTopMm_ = env->CallDoubleMethod(jDeviceInfo, method);
+    method = env->GetMethodID(cDeviceInfo, "getPowerButtonBottomMm", "()D");
+    device_info.powerButtonBottomMm_ = env->CallDoubleMethod(jDeviceInfo, method);
+    method = env->GetMethodID(cDeviceInfo, "getVolUpButtonTopMm", "()D");
+    device_info.volUpButtonTopMm_ = env->CallDoubleMethod(jDeviceInfo, method);
+    method = env->GetMethodID(cDeviceInfo, "getVolUpButtonBottomMm", "()D");
+    device_info.volUpButtonBottomMm_ = env->CallDoubleMethod(jDeviceInfo, method);
+    return setDeviceInfo(device_info, magnified);
 }
 
 /*
