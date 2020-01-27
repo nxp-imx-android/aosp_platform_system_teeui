@@ -32,16 +32,22 @@ public class Main {
     static private Random random;
 
     private static void createAndShowUI() {
-        theFrame = new JFrame("Framebufferizer");
+        theFrame = new JFrame("TeeuiFramebufferizer");
         theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        theFramebuffer = FrameBufferBuffer.createFrameBufferBuffer(256, 400,  256);
+        theFramebuffer = new FrameBufferBuffer();
+        theFramebuffer.setFrame(theFrame);
         FrameBufferBuffer.MagnifiedView magnifiedView = theFramebuffer.getMagnifiedView();
+        FrameBufferBuffer.DeviceSelector deviceSelector = theFramebuffer.getDeviceSelector();
         magnifiedView.setPreferredSize(new Dimension(100, 100));
-        theFrame.getContentPane().add(theFramebuffer, BorderLayout.CENTER);
+        magnifiedView.setMinimumSize(new Dimension(100, 100));
+        magnifiedView.setMaximumSize(new Dimension(100, 100));
         theFrame.getContentPane().add(magnifiedView, BorderLayout.EAST);
-        theFrame.setSize(400, 500);
+        theFrame.getContentPane().add(theFramebuffer, BorderLayout.CENTER);
+        theFrame.getContentPane().add(deviceSelector, BorderLayout.NORTH);
+        theFrame.pack();
         theFrame.setVisible(true);
+        deviceSelector.refreshSelections();
+
     }
 
     public static void main(String[] args) {

@@ -20,10 +20,8 @@
 
 using namespace teeui;
 
-static uint32_t device_width_px;
-static uint32_t device_height_px;
-static double dp2px_;
-static double mm2px_;
+static DeviceInfo sDeviceInfo;
+static bool sMagnified;
 
 uint32_t alfaCombineChannel(uint32_t shift, double alfa, uint32_t a, uint32_t b) {
     a >>= shift;
@@ -86,13 +84,9 @@ Error drawElements(std::tuple<Elements...>& layout, const PixelDrawer& drawPixel
     return (std::get<Elements>(layout).draw(drawPixel) || ...);
 }
 
-uint32_t setDeviceInfo(uint32_t width, uint32_t height, uint32_t colormodel, double dp2px,
-                       double mm2px) {
-    dp2px_ = dp2px;
-    mm2px_ = mm2px;
-    (void)colormodel;  // ignored for now;
-    device_width_px = width;
-    device_height_px = height;
+uint32_t setDeviceInfo(DeviceInfo deviceInfo, bool magnified) {
+    sDeviceInfo = deviceInfo;
+    sMagnified = magnified;
     return 0;
 }
 
@@ -107,15 +101,20 @@ uint32_t renderUIIntoBuffer(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint
         afterLastPixelIndex > buffer_size_in_elements_not_bytes) {
         return uint32_t(Error::OutOfBoundsDrawing);
     }
-    context<ConUIParameters> conv(mm2px_, dp2px_);
-    conv.setParam<RightEdgeOfScreen>(pxs(device_width_px));
-    conv.setParam<BottomOfScreen>(pxs(device_height_px));
-    conv.setParam<PowerButtonTop>(100_dp);
-    conv.setParam<PowerButtonBottom>(150_dp);
-    conv.setParam<VolUpButtonTop>(200_dp);
-    conv.setParam<VolUpButtonBottom>(250_dp);
-    conv.setParam<DefaultFontSize>(14_dp);
-    conv.setParam<BodyFontSize>(16_dp);
+    context<ConUIParameters> conv(sDeviceInfo.mm2px_, sDeviceInfo.dp2px_);
+    conv.setParam<RightEdgeOfScreen>(pxs(sDeviceInfo.width_));
+    conv.setParam<BottomOfScreen>(pxs(sDeviceInfo.height_));
+    conv.setParam<PowerButtonTop>(mms(sDeviceInfo.powerButtonTopMm_));
+    conv.setParam<PowerButtonBottom>(mms(sDeviceInfo.powerButtonBottomMm_));
+    conv.setParam<VolUpButtonTop>(mms(sDeviceInfo.volUpButtonTopMm_));
+    conv.setParam<VolUpButtonBottom>(mms(sDeviceInfo.volUpButtonBottomMm_));
+    if (sMagnified) {
+        conv.setParam<DefaultFontSize>(18_dp);
+        conv.setParam<BodyFontSize>(20_dp);
+    } else {
+        conv.setParam<DefaultFontSize>(14_dp);
+        conv.setParam<BodyFontSize>(16_dp);
+    }
 
     auto layoutInstance = instantiateLayout(ConfUILayout(), conv);
 
