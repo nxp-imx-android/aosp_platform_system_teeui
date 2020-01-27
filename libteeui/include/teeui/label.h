@@ -114,7 +114,8 @@ template <typename Derived> class Label : public LayoutElement<Derived>, public 
               context = Derived::label_font_size, context = Derived::label_line_height,
               {&Derived::label_text[0], &Derived::label_text[sizeof(Derived::label_text) - 1]},
               Derived::label_right_justified, Derived::label_vertically_centered,
-              Derived::label_text_color, getFont(Derived::label_font), Derived::text_id) {}
+              context = Derived::label_text_color, getFont(Derived::label_font), Derived::text_id) {
+    }
 
     Error draw(const PixelDrawer& drawPixel) {
         LabelImpl::LineInfo::info_t lines[Derived::label_number_of_lines];
@@ -139,7 +140,7 @@ template <typename Derived> class Label : public LayoutElement<Derived>, public 
 
 #define VerticallyCentered static const constexpr bool label_vertically_centered = true
 
-#define TextColor(color) static const constexpr Color label_text_color = color
+#define TextColor(color) static const constexpr auto label_text_color = color
 
 #define FONT(name) TEEUI_FONT_##name()
 

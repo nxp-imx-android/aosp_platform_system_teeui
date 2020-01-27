@@ -84,10 +84,10 @@ class Button : public LayoutElement<Derived>, public ButtonImpl {
     template <typename Context>
     explicit Button(const Context& context)
         : LayoutElement<Derived>(context),
-          ButtonImpl(context = Derived::button_radius, Derived::button_color,
-                     Derived::button_drawable_object_color, Derived::button_round_top_left,
-                     Derived::button_round_top_right, Derived::button_round_bottom_left,
-                     Derived::button_round_bottom_right) {
+          ButtonImpl(context = Derived::button_radius, context = Derived::button_color,
+                     context = Derived::button_drawable_object_color,
+                     Derived::button_round_top_left, Derived::button_round_top_right,
+                     Derived::button_round_bottom_left, Derived::button_round_bottom_right) {
         static_assert(
             convexElemCount::value >=
                 std::tuple_size<decltype(Derived::button_drawable_objects)>::value,
@@ -113,7 +113,7 @@ class Button : public LayoutElement<Derived>, public ButtonImpl {
 
 #define CornerRadius(radius) static const constexpr auto button_radius = radius
 
-#define ButtonColor(color) static const constexpr Color button_color = color
+#define ButtonColor(color) static const constexpr auto button_color = color
 
 #define RoundTopLeft static const constexpr bool button_round_top_left = true
 #define RoundTopRight static const constexpr bool button_round_top_right = true
@@ -130,6 +130,6 @@ class Button : public LayoutElement<Derived>, public ButtonImpl {
 #define ConvexObjects(convex_objects)                                                              \
     static constexpr const auto button_drawable_objects = convex_objects
 
-#define ConvexObjectColor(color) static constexpr const Color button_drawable_object_color = color
+#define ConvexObjectColor(color) static constexpr const auto button_drawable_object_color = color
 
 #endif  // LIBTEEUI_BUTTON_H_

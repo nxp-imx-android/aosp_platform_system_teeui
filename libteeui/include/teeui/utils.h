@@ -185,8 +185,6 @@ template <> static constexpr const char* str<mm> = "mm";
 
 using DefaultNumericType = float;
 
-template <typename UnitFrom, typename UnitTo, typename Numeric = DefaultNumericType> struct convert;
-
 namespace bits {
 
 inline long double abs(long double v) {
@@ -218,6 +216,18 @@ inline long double sqrt(long double v) {
 
 inline double sqrt(double v) {
     return ::sqrt(v);
+}
+
+inline float round(float v) {
+    return ::roundf(v);
+}
+
+inline long double round(long double v) {
+    return ::roundl(v);
+}
+
+inline double round(double v) {
+    return ::round(v);
 }
 
 }  // namespace bits
@@ -267,9 +277,9 @@ template <typename T1, typename T2, typename Numeric, template <typename> class 
     BinOp(const BinOp&) = default;
     BinOp(BinOp&&) = default;
 
-    template <typename Context> Coordinate<px, Numeric> eval(const Context& conv) const {
-        Coordinate<px, Numeric> v1 = conv = v1_;
-        Coordinate<px, Numeric> v2 = conv = v2_;
+    template <typename Context> Coordinate<px, Numeric> eval(const Context& ctx) const {
+        Coordinate<px, Numeric> v1 = ctx = v1_;
+        Coordinate<px, Numeric> v2 = ctx = v2_;
         return Op<Numeric>::eval(v1, v2);
     }
     template <typename T> constexpr add<BinOp, T, Numeric> operator+(const T& v) const {
@@ -286,7 +296,10 @@ template <typename T1, typename T2, typename Numeric, template <typename> class 
     }
 };
 
-template <typename Name, typename Numeric> struct MetaParam {
+template <typename Name, typename ParamType> struct MetaParam {};
+
+template <typename Name, typename Unit, typename Numeric>
+struct MetaParam<Name, Coordinate<Unit, Numeric>> {
     template <typename T> constexpr add<MetaParam, T, Numeric> operator+(const T& v) const {
         return {*this, v};
     }
@@ -301,9 +314,9 @@ template <typename Name, typename Numeric> struct MetaParam {
     }
 };
 
-template <typename Name, typename Numeric> struct Param {
-    Coordinate<px, Numeric> coord_;
-    Param() : coord_(0) {}
+template <typename Name, typename ParamType> struct Param {
+    ParamType param_;
+    Param() : param_{} {}
     Param(const Param&) = default;
     Param(Param&&) = default;
     Param& operator=(const Param&) = default;
@@ -319,7 +332,13 @@ template <typename Unit, typename Numeric> class Coordinate {
     constexpr Coordinate(Numeric value) : value_(value) {}
     Coordinate(const Coordinate&) = default;
     Coordinate(Coordinate&&) = default;
-    template <typename N> Coordinate(const Coordinate<Unit, N>& other) : value_(other.count()) {}
+    template <typename N> Coordinate(const Coordinate<Unit, N>& other) {
+        if constexpr (std::is_floating_point<N>::value && std::is_integral<Numeric>::value) {
+            value_ = bits::round(other.count());
+        } else {
+            value_ = other.count();
+        }
+    }
     Coordinate& operator=(const Coordinate& rhs) = default;
     Coordinate& operator=(Coordinate&& rhs) = default;
 
@@ -377,16 +396,43 @@ template <typename... T> struct MetaList {};
 
 template <typename MetaParam> struct metaParam2Param;
 
-template <typename ParamName, typename Numeric>
-struct metaParam2Param<MetaParam<ParamName, Numeric>> {
-    using type = Param<ParamName, Numeric>;
+template <typename ParamName, typename ParamType>
+struct metaParam2Param<MetaParam<ParamName, ParamType>> {
+    using type = Param<ParamName, ParamType>;
 };
 
-template <typename... ParamsNames, typename Numeric>
-class context<MetaList<MetaParam<ParamsNames, Numeric>...>, Numeric> {
+template <typename MetaParam> struct metaParam2ParamType;
+
+template <typename ParamName, typename ParamType>
+struct metaParam2ParamType<MetaParam<ParamName, ParamType>> {
+    using type = ParamType;
+};
+
+template <typename T> struct isCoordinateType { constexpr static const bool value = false; };
+
+template <typename Unit, typename Numeric> struct isCoordinateType<Coordinate<Unit, Numeric>> {
+    constexpr static const bool value = true;
+};
+
+template <typename MetaParam> struct isCoordinateParam;
+
+template <typename ParamName, typename ParamType>
+struct isCoordinateParam<MetaParam<ParamName, ParamType>> {
+    constexpr static const bool value = isCoordinateType<ParamType>::value;
+};
+
+template <typename T> struct isMetaParam { constexpr static const bool value = false; };
+
+template <typename ParamName, typename ParamType>
+struct isMetaParam<MetaParam<ParamName, ParamType>> {
+    constexpr static const bool value = true;
+};
+
+template <typename... ParamsNames, typename... ParamTypes, typename Numeric>
+class context<MetaList<MetaParam<ParamsNames, ParamTypes>...>, Numeric> {
     Numeric mm2px_;
     Numeric dp2px_;
-    std::tuple<Param<ParamsNames, Numeric>...> params_;
+    std::tuple<Param<ParamsNames, ParamTypes>...> params_;
 
     class Proxy {
         Numeric valuepx_;
@@ -418,12 +464,22 @@ class context<MetaList<MetaParam<ParamsNames, Numeric>...>, Numeric> {
         return std::get<typename metaParam2Param<MetaParam>::type>(params_);
     }
 
-    template <typename MetaParam> void setParam(const Coordinate<px, Numeric>& v) {
-        getParam<MetaParam>().coord_ = v;
+    template <typename MetaParam>
+    void setParam(
+        std::enable_if_t<isCoordinateParam<MetaParam>::value, const Coordinate<px, Numeric>>& v) {
+        getParam<MetaParam>().param_ = v;
     }
 
-    template <typename MetaParam, typename T> void setParam(const T& v) {
-        getParam<MetaParam>().coord_ = *this = v;
+    template <typename MetaParam, typename Unit, typename N,
+              typename = std::enable_if_t<isCoordinateParam<MetaParam>::value>>
+    void setParam(const Coordinate<Unit, N>& v) {
+        getParam<MetaParam>().param_ = *this = v;
+    }
+
+    template <typename MetaParam>
+    void setParam(std::enable_if_t<!isCoordinateParam<MetaParam>::value,
+                                   const typename metaParam2ParamType<MetaParam>::type>& v) {
+        getParam<MetaParam>().param_ = v;
     }
 
     Proxy operator=(const Coordinate<px, Numeric>& rhs) const {
@@ -439,8 +495,20 @@ class context<MetaList<MetaParam<ParamsNames, Numeric>...>, Numeric> {
     Proxy operator=(const BinOp<T1, T2, Numeric, Op>& rhs) const {
         return {rhs.eval(*this).count(), mm2px_, dp2px_};
     }
-    template <typename ParamName> Proxy operator=(const MetaParam<ParamName, Numeric>&) const {
-        return {getParam<MetaParam<ParamName, Numeric>>().coord_.count(), mm2px_, dp2px_};
+    template <typename ParamName, typename ParamType>
+    std::enable_if_t<isCoordinateParam<MetaParam<ParamName, ParamType>>::value, Proxy>
+    operator=(const MetaParam<ParamName, ParamType>&) const {
+        return {getParam<MetaParam<ParamName, ParamType>>().param_.count(), mm2px_, dp2px_};
+    }
+    template <typename ParamName, typename ParamType>
+    std::enable_if_t<!isCoordinateParam<MetaParam<ParamName, ParamType>>::value, const ParamType&>
+    operator=(const MetaParam<ParamName, ParamType>&) const {
+        return getParam<MetaParam<ParamName, ParamType>>().param_;
+    }
+    template <typename T,
+              typename = std::enable_if_t<!(isMetaParam<T>::value || isCoordinateType<T>::value)>>
+    inline T&& operator=(T&& v) const {
+        return std::forward<T>(v);
     }
 };
 
@@ -764,7 +832,7 @@ template <typename Coord> class Box {
      */
     Box translate(const Point<Coord>& offset) const& {
         Box result = *this;
-        result += offset;
+        result.topLeft_ += offset;
         return result;
     }
     /*
@@ -897,9 +965,11 @@ template <typename Iterator> Range<Iterator> makeRange(Iterator begin, Iterator 
 
 #define END_ELEMENT() }
 
-#define DECLARE_PARAMETER(name)                                                                    \
+#define DECLARE_TYPED_PARAMETER(name, type)                                                        \
     struct Param_##name {};                                                                        \
-    using name = ::teeui::MetaParam<Param_##name, DefaultNumericType>
+    using name = ::teeui::MetaParam<Param_##name, type>
+
+#define DECLARE_PARAMETER(name) DECLARE_TYPED_PARAMETER(name, ::teeui::pxs)
 
 #define CONSTANT(name, value) static constexpr const auto name = value
 
