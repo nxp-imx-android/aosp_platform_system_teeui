@@ -20,8 +20,6 @@ package com.android.framebufferizer;
 import com.android.framebufferizer.utils.FrameBufferBuffer;
 
 import java.awt.*;
-import java.awt.image.DataBufferInt;
-import java.security.SecureRandom;
 import java.util.Random;
 
 import javax.swing.*;
@@ -37,19 +35,15 @@ public class Main {
         theFramebuffer = new FrameBufferBuffer();
         theFramebuffer.setFrame(theFrame);
         FrameBufferBuffer.MagnifiedView magnifiedView = theFramebuffer.getMagnifiedView();
-        FrameBufferBuffer.DeviceSelector deviceSelector = theFramebuffer.getDeviceSelector();
-        FrameBufferBuffer.LanguageSelector languageSelector = theFramebuffer.getLanguageSelector();
+        FrameBufferBuffer.ConfigSelector configSelector = theFramebuffer.getConfigSelector();
         magnifiedView.setPreferredSize(new Dimension(100, 100));
         magnifiedView.setMinimumSize(new Dimension(100, 100));
         magnifiedView.setMaximumSize(new Dimension(100, 100));
         theFrame.getContentPane().add(magnifiedView, BorderLayout.EAST);
         theFrame.getContentPane().add(theFramebuffer, BorderLayout.CENTER);
-        theFrame.getContentPane().add(deviceSelector, BorderLayout.NORTH);
-        theFrame.getContentPane().add(languageSelector, BorderLayout.SOUTH);
+        theFrame.getContentPane().add(configSelector, BorderLayout.NORTH);
         theFrame.pack();
         theFrame.setVisible(true);
-        deviceSelector.refreshSelections();
-
     }
 
     public static void main(String[] args) {

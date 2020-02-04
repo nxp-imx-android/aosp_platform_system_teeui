@@ -10,12 +10,10 @@ extern "C" {
 /*
  * Class:     com_android_framebufferizer_NativeRenderer
  * Method:    setDeviceInfo
- * Signature: (Lcom/android/framebufferizer/utils/DeviceInfo;Z)I
+ * Signature: (Lcom/android/framebufferizer/utils/DeviceInfo;ZZ)I
  */
-JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_setDeviceInfo(JNIEnv*,
-                                                                                     jclass,
-                                                                                     jobject,
-                                                                                     jboolean);
+JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_setDeviceInfo(
+    JNIEnv*, jclass, jobject, jboolean, jboolean);
 
 /*
  * Class:     com_android_framebufferizer_NativeRenderer
@@ -26,18 +24,28 @@ JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_renderBuf
     JNIEnv*, jclass, jint, jint, jint, jint, jint, jintArray);
 
 /*
- * Class:     com_android_framebufferizer_NativeRenderer_setLanguage
+ * Class:     com_android_framebufferizer_NativeRenderer
  * Method:    setLanguage
- * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ * Signature: (Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_com_android_framebufferizer_NativeRenderer_setLanguage(JNIEnv*, jclass,
                                                                                    jstring);
+
 /*
- * Class:     com_android_framebufferizer_NativeRenderer_getLanguageIdList
+ * Class:     com_android_framebufferizer_NativeRenderer
  * Method:    getLanguageIdList
+ * Signature: ()[Ljava/lang/String;
  */
 JNIEXPORT jobjectArray JNICALL
 Java_com_android_framebufferizer_NativeRenderer_getLanguageIdList(JNIEnv*, jclass);
+
+/*
+ * Class:     com_android_framebufferizer_NativeRenderer
+ * Method:    setConfimationMessage
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL
+Java_com_android_framebufferizer_NativeRenderer_setConfimationMessage(JNIEnv*, jclass, jstring);
 
 #ifdef __cplusplus
 }
