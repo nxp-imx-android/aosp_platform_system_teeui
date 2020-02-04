@@ -25,6 +25,22 @@ using namespace teeui;
 
 static DeviceInfo sDeviceInfo;
 static bool sMagnified;
+static bool sInverted;
+static std::string sConfirmationMessage;
+
+/*
+ * AOSP color scheme constants.
+ */
+constexpr static const Color kShieldColor = Color(0xff778500);
+constexpr static const Color kShieldColorInv = Color(0xffc4cb80);
+constexpr static const Color kTextColor = Color(0xff212121);
+constexpr static const Color kTextColorInv = Color(0xffdedede);
+constexpr static const Color kBackGroundColor = Color(0xffffffff);
+constexpr static const Color kBackGroundColorInv = Color(0xff212121);
+
+void setConfirmationMessage(const char* confirmationMessage) {
+    sConfirmationMessage = confirmationMessage;
+}
 
 uint32_t alfaCombineChannel(uint32_t shift, double alfa, uint32_t a, uint32_t b) {
     a >>= shift;
@@ -75,9 +91,10 @@ Error drawElements(std::tuple<Elements...>& layout, const PixelDrawer& drawPixel
     return (std::get<Elements>(layout).draw(drawPixel) || ...);
 }
 
-uint32_t setDeviceInfo(DeviceInfo deviceInfo, bool magnified) {
+uint32_t setDeviceInfo(DeviceInfo deviceInfo, bool magnified, bool inverted) {
     sDeviceInfo = deviceInfo;
     sMagnified = magnified;
+    sInverted = inverted;
     return 0;
 }
 
@@ -109,30 +126,42 @@ uint32_t renderUIIntoBuffer(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint
         afterLastPixelIndex > buffer_size_in_elements_not_bytes) {
         return uint32_t(Error::OutOfBoundsDrawing);
     }
-    context<ConUIParameters> conv(sDeviceInfo.mm2px_, sDeviceInfo.dp2px_);
-    conv.setParam<RightEdgeOfScreen>(pxs(sDeviceInfo.width_));
-    conv.setParam<BottomOfScreen>(pxs(sDeviceInfo.height_));
-    conv.setParam<PowerButtonTop>(mms(sDeviceInfo.powerButtonTopMm_));
-    conv.setParam<PowerButtonBottom>(mms(sDeviceInfo.powerButtonBottomMm_));
-    conv.setParam<VolUpButtonTop>(mms(sDeviceInfo.volUpButtonTopMm_));
-    conv.setParam<VolUpButtonBottom>(mms(sDeviceInfo.volUpButtonBottomMm_));
+    context<ConUIParameters> ctx(sDeviceInfo.mm2px_, sDeviceInfo.dp2px_);
+    ctx.setParam<RightEdgeOfScreen>(pxs(sDeviceInfo.width_));
+    ctx.setParam<BottomOfScreen>(pxs(sDeviceInfo.height_));
+    ctx.setParam<PowerButtonTop>(mms(sDeviceInfo.powerButtonTopMm_));
+    ctx.setParam<PowerButtonBottom>(mms(sDeviceInfo.powerButtonBottomMm_));
+    ctx.setParam<VolUpButtonTop>(mms(sDeviceInfo.volUpButtonTopMm_));
+    ctx.setParam<VolUpButtonBottom>(mms(sDeviceInfo.volUpButtonBottomMm_));
     if (sMagnified) {
-        conv.setParam<DefaultFontSize>(18_dp);
-        conv.setParam<BodyFontSize>(20_dp);
+        ctx.setParam<DefaultFontSize>(18_dp);
+        ctx.setParam<BodyFontSize>(20_dp);
     } else {
-        conv.setParam<DefaultFontSize>(14_dp);
-        conv.setParam<BodyFontSize>(16_dp);
+        ctx.setParam<DefaultFontSize>(14_dp);
+        ctx.setParam<BodyFontSize>(16_dp);
     }
 
-    auto layoutInstance = instantiateLayout(ConfUILayout(), conv);
+    if (sInverted) {
+        ctx.setParam<ShieldColor>(kShieldColorInv);
+        ctx.setParam<ColorText>(kTextColorInv);
+        ctx.setParam<ColorBG>(kBackGroundColorInv);
+    } else {
+        ctx.setParam<ShieldColor>(kShieldColor);
+        ctx.setParam<ColorText>(kTextColor);
+        ctx.setParam<ColorBG>(kBackGroundColor);
+    }
+
+    auto layoutInstance = instantiateLayout(ConfUILayout(), ctx);
 
     translateLabels(layoutInstance);
 
     uint32_t* begin = buffer + (y * lineStride + x);
+
+    Color bgColor = sInverted ? kBackGroundColorInv : kBackGroundColor;
+
     for (uint32_t yi = 0; yi < h; ++yi) {
         for (uint32_t xi = 0; xi < w; ++xi) {
-            begin[xi] = 0xffffffff;
-            //            begin[xi] = renderPixel(x + xi, y + yi, layoutInstance);
+            begin[xi] = bgColor;
         }
         begin += lineStride;
     }
@@ -147,6 +176,9 @@ uint32_t renderUIIntoBuffer(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint
 
     auto pixelDrawer = makePixelDrawer(
         [&fb](uint32_t x, uint32_t y, Color color) -> Error { return fb.drawPixel(x, y, color); });
+
+    std::get<LabelBody>(layoutInstance)
+        .setText({&*sConfirmationMessage.begin(), &*sConfirmationMessage.end()});
 
     if (auto error = drawElements(layoutInstance, pixelDrawer)) {
         return uint32_t(error.code());

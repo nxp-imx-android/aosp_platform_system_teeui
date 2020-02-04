@@ -32,10 +32,12 @@ struct DeviceInfo {
     double volUpButtonBottomMm_;
 };
 
-uint32_t setDeviceInfo(DeviceInfo device_info, bool magnified);
+uint32_t setDeviceInfo(DeviceInfo device_info, bool magnified, bool inverted = false);
 uint32_t renderUIIntoBuffer(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t lineStride,
                             uint32_t* buffer, size_t buffer_size_in_elements_not_bytes);
 
 void selectLanguage(const char* language_id);
+
+void setConfirmationMessage(const char* confirmationMessage);
 
 #endif  // TEEUI_LIBTEEUI_INCLUDE_TEEUI_H_
