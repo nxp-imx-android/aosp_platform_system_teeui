@@ -107,7 +107,7 @@ Error LabelImpl::draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds, Line
     curLine = lineInfo->begin();
 
 #ifdef DRAW_DEBUG_MARKERS
-    drawBox(*boundingBox + offset, 0xff00);
+    drawBox(boundingBox->translate(offset), 0xff00);
     auto p = offset + curLine->lineStart;
     drawPixel(p.x().count(), p.y().count(), 0xffff0000);
 #endif
