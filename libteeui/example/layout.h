@@ -1,5 +1,4 @@
 /*
- *
  * Copyright 2019, The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef TEEUI_LIBTEEUI_EXAMPLE_LAYOUT_H_
-#define TEEUI_LIBTEEUI_EXAMPLE_LAYOUT_H_
+#pragma once
 
 #include <teeui/button.h>
 #include <teeui/label.h>
@@ -34,10 +32,13 @@ DECLARE_PARAMETER(VolUpButtonTop);
 DECLARE_PARAMETER(VolUpButtonBottom);
 DECLARE_PARAMETER(DefaultFontSize);  // 14_dp regular and 18_dp magnified
 DECLARE_PARAMETER(BodyFontSize);     // 16_dp regular and 20_dp magnified
+DECLARE_TYPED_PARAMETER(ShieldColor, ::teeui::Color);
+DECLARE_TYPED_PARAMETER(ColorText, ::teeui::Color);
+DECLARE_TYPED_PARAMETER(ColorBG, ::teeui::Color);
 
 NEW_PARAMETER_SET(ConUIParameters, RightEdgeOfScreen, BottomOfScreen, PowerButtonTop,
                   PowerButtonBottom, VolUpButtonTop, VolUpButtonBottom, DefaultFontSize,
-                  BodyFontSize);
+                  BodyFontSize, ShieldColor, ColorText, ColorBG);
 
 CONSTANT(BorderWidth, 24_dp);
 CONSTANT(PowerButtonCenter, (PowerButtonTop() + PowerButtonBottom()) / 2_px);
@@ -45,7 +46,6 @@ CONSTANT(VolUpButtonCenter, (VolUpButtonTop() + VolUpButtonBottom()) / 2.0_px);
 CONSTANT(GrayZone, 12_dp);
 CONSTANT(RightLabelEdge, RightEdgeOfScreen() - BorderWidth - GrayZone);
 CONSTANT(LabelWidth, RightLabelEdge - BorderWidth);
-CONSTANT(DefaultTextColor, Color(0xff212121));
 
 CONSTANT(SQRT2, 1.4142135623_dp);
 CONSTANT(SQRT8, 2.828427125_dp);
@@ -56,8 +56,10 @@ CONSTANT(ARROW_SHAPE,
                         CONVEX_OBJECT(Vec2d{6.0_dp - SQRT8, 6.0_dp}, Vec2d{6.0_dp, 6.0_dp},
                                       Vec2d{0.0_dp, 12.0_dp}, Vec2d{-SQRT2, 12.0_dp - SQRT2})));
 
+DECLARE_FONT_BUFFER(RobotoMedium, RobotoMedium, RobotoMedium_length);
 DECLARE_FONT_BUFFER(RobotoRegular, RobotoRegular, RobotoRegular_length);
 DECLARE_FONT_BUFFER(Shield, Shield, Shield_length);
+
 CONSTANT(DefaultFont, FONT(RobotoRegular));
 
 BEGIN_ELEMENT(LabelOK, teeui::Label)
@@ -69,8 +71,8 @@ Position(BorderWidth, PowerButtonCenter - dim_h / 2.0_px);
 DefaultText("Wiggle your big toe to confirm");
 RightJustified;
 VerticallyCentered;
-TextColor(DefaultTextColor);
-Font(DefaultFont);
+TextColor(ColorText());
+Font(FONT(RobotoMedium));
 TextID(1424834532030812203);
 END_ELEMENT();
 
@@ -78,10 +80,10 @@ BEGIN_ELEMENT(IconPower, teeui::Button, ConvexObjectCount(2))
 Dimension(BorderWidth, PowerButtonBottom() - PowerButtonTop());
 Position(RightEdgeOfScreen() - BorderWidth, PowerButtonTop());
 CornerRadius(3_dp);
-ButtonColor(0xff212121);
+ButtonColor(ColorText());
 RoundTopLeft;
 RoundBottomLeft;
-ConvexObjectColor(0xffffffff);
+ConvexObjectColor(ColorBG());
 ConvexObjects(ARROW_SHAPE);
 END_ELEMENT();
 
@@ -94,8 +96,8 @@ Position(BorderWidth, VolUpButtonCenter - dim_h / 2.0_px);
 DefaultText("Wink left then right thrice to cancel");
 RightJustified;
 VerticallyCentered;
-TextColor(DefaultTextColor);
-Font(DefaultFont);
+TextColor(ColorText());
+Font(FONT(RobotoMedium));
 TextID(1796282799666106567);
 END_ELEMENT();
 
@@ -103,32 +105,32 @@ BEGIN_ELEMENT(IconVolUp, teeui::Button, ConvexObjectCount(2))
 Dimension(BorderWidth, VolUpButtonBottom() - VolUpButtonTop());
 Position(RightEdgeOfScreen() - BorderWidth, VolUpButtonTop());
 CornerRadius(5_dp);
-ButtonColor(0xffffffff);
-ConvexObjectColor(0xff212121);
+ButtonColor(ColorBG());
+ConvexObjectColor(ColorText());
 ConvexObjects(ARROW_SHAPE);
 END_ELEMENT();
 
 BEGIN_ELEMENT(IconShield, teeui::Label)
-FontSize(36_dp);
-LineHeight(36_dp);
+FontSize(24_dp);
+LineHeight(24_dp);
 NumberOfLines(1);
 Dimension(LabelWidth, HeightFromLines);
 Position(BorderWidth, BOTTOM_EDGE_OF(LabelCancel) + 60_dp);
 DefaultText("A");  // ShieldTTF has just one glyph at the code point for capital A
-TextColor(0xfff48542);
+TextColor(ShieldColor());
 Font(FONT(Shield));
 END_ELEMENT();
 
 BEGIN_ELEMENT(LabelTitle, teeui::Label)
-FontSize(22_dp);
-LineHeight(28_dp);
+FontSize(20_dp);
+LineHeight(20_dp);
 NumberOfLines(1);
 Dimension(RightEdgeOfScreen() - BorderWidth, HeightFromLines);
-Position(BorderWidth, BOTTOM_EDGE_OF(IconShield) + 16_dp);
+Position(BorderWidth, BOTTOM_EDGE_OF(IconShield) + 12_dp);
 DefaultText("Android Protected Confirmation");
-Font(DefaultFont);
+Font(FONT(RobotoMedium));
 VerticallyCentered;
-TextColor(DefaultTextColor);
+TextColor(ColorText());
 TextID(6973195374358399966);
 END_ELEMENT();
 
@@ -141,7 +143,7 @@ Position(BorderWidth, BottomOfScreen() - BorderWidth - dim_h);
 DefaultText("This confirmation provides an extra layer of security for the action you're "
             "about to take.");
 VerticallyCentered;
-TextColor(DefaultTextColor);
+TextColor(ColorText());
 Font(DefaultFont);
 TextID(217688588483778177);
 END_ELEMENT();
@@ -150,17 +152,15 @@ BEGIN_ELEMENT(LabelBody, teeui::Label)
 FontSize(BodyFontSize());
 LineHeight(BodyFontSize() * 1.4_px);
 NumberOfLines(20);
-Position(BorderWidth, BOTTOM_EDGE_OF(LabelTitle) + 24_dp);
+Position(BorderWidth, BOTTOM_EDGE_OF(LabelTitle) + 18_dp);
 Dimension(LabelWidth, LabelHint::pos_y - pos_y - 24_dp);
-DefaultText("Confirmation Message");
-TextColor(DefaultTextColor);
-Font(DefaultFont);
+DefaultText("12345678901234567890123456789012345678901234567890123456789012345678901234567890123456"
+            "78901234567890");
+TextColor(ColorText());
+Font(FONT(RobotoRegular));
 END_ELEMENT();
 
 NEW_LAYOUT(ConfUILayout, LabelOK, IconPower, LabelCancel, IconVolUp, IconShield, LabelTitle,
            LabelHint, LabelBody);
 
-// LABELS(ConfUILabels, LabelOK, LabelCancel, LabelTitle, LabelHint, LabelBody);
 }  // namespace teeui
-
-#endif  // TEEUI_LIBTEEUI_EXAMPLE_LAYOUT_H_
