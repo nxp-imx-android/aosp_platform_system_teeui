@@ -23,8 +23,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.geom.AffineTransform;
@@ -88,63 +86,112 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
     }
 
 
-    public class DeviceSelector extends JPanel implements ActionListener {
-        private JComboBox<String> dropDownMenu = new JComboBox(DeviceInfoDB.Device.values());
-        private JCheckBox magnifiedCheckbox = new JCheckBox("Magnified");
+    public class ConfigSelector extends JPanel implements ActionListener {
+        private final String languages [];
 
-        protected DeviceSelector() {
-            dropDownMenu.addActionListener(this);
+        {
+            languages = NativeRenderer.getLanguageIdList();
+        }
+
+        private JComboBox<String> deviceSelector = new JComboBox(DeviceInfoDB.Device.values());
+        private JCheckBox magnifiedCheckbox = new JCheckBox("Magnified");
+        private JCheckBox invertedCheckbox = new JCheckBox("Inverted");
+        private JComboBox<String> localeSelector = new JComboBox(languages);
+        private JTextField confirmationMessage = new JTextField();
+
+        protected ConfigSelector() {
+            System.err.println("ConfigSelector");
+            this.setLayout(new GridBagLayout());
+
+            GridBagConstraints c = null;
+
+            c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            this.add(new JLabel("Select Device:"), c);
+
+            deviceSelector.addActionListener(this);
+            c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 0;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridwidth = 2;
+            this.add(deviceSelector, c);
+
+            c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 1;
+            this.add(new JLabel("Select Locale:"), c);
+
+            localeSelector.addActionListener(this);
+            c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 1;
+            c.gridwidth = 2;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            this.add(localeSelector, c);
+
+            c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 2;
+            this.add(new JLabel("UIOptions:"), c);
+
             magnifiedCheckbox.addActionListener(this);
-            this.add(dropDownMenu);
-            this.add(magnifiedCheckbox);
+            c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 2;
+            this.add(magnifiedCheckbox, c);
+
+            invertedCheckbox.addActionListener(this);
+            c = new GridBagConstraints();
+            c.gridx = 2;
+            c.gridy = 2;
+            this.add(invertedCheckbox, c);
+
+            c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 3;
+            this.add(new JLabel("Confirmation message:"), c);
+
+            confirmationMessage.setText("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
+            confirmationMessage.addActionListener(this);
+            c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 3;
+            c.fill = GridBagConstraints.BOTH;
+            c.gridwidth = 2;
+            this.add(confirmationMessage, c);
         }
 
         public void actionPerformed(ActionEvent e) {
-            synchronized (this) {
-                FrameBufferBuffer.this.calibrateNativeBuffer();
-            }
-        }
-
-        public void refreshSelections(){
-            dropDownMenu.setSelectedItem(DeviceInfoDB.Device.CORAL);
+            FrameBufferBuffer.this.renderNativeBuffer();
         }
 
         public DeviceInfoDB.Device currentDevice() {
-            return (DeviceInfoDB.Device) dropDownMenu.getSelectedItem();
+            return (DeviceInfoDB.Device) deviceSelector.getSelectedItem();
+        }
+
+        public String currentLocale() {
+            return (String)localeSelector.getSelectedItem();
         }
 
         public boolean magnified() {
             return magnifiedCheckbox.isSelected();
         }
-    }
 
-    public class LanguageSelector extends JPanel implements ActionListener {
-        String languages [] = NativeRenderer.getLanguageIdList();
-
-        private JComboBox<String> dropDownMenu;
-
-        protected LanguageSelector() {
-            dropDownMenu = new JComboBox(languages);
-            dropDownMenu.addActionListener(this);
-            this.add(dropDownMenu);
+        public boolean inverted() {
+            return invertedCheckbox.isSelected();
         }
 
-        public void actionPerformed(ActionEvent e) {
-            synchronized (this) {
-                String language = (String) dropDownMenu.getSelectedItem();
-                NativeRenderer.setLanguage(language);
-                FrameBufferBuffer.this.calibrateNativeBuffer();
-            }
+        public String confirmationMessage() {
+            return confirmationMessage.getText();
         }
-
     }
-
 
     private BufferedImage mImage;
     private DataBufferInt mBuffer;
     private MagnifiedView mMagnifiedView;
-    private DeviceSelector mDeviceSelector;
-    private LanguageSelector mLanguageSelector;
+    private ConfigSelector mConfigSelector;
     private JFrame mFrame;
 
     public MagnifiedView getMagnifiedView() {
@@ -154,18 +201,11 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         return mMagnifiedView;
     }
 
-    public DeviceSelector getDeviceSelector(){
-        if (mDeviceSelector == null){
-            mDeviceSelector = new DeviceSelector();
+    public ConfigSelector getConfigSelector(){
+        if (mConfigSelector == null){
+            mConfigSelector = new ConfigSelector();
         }
-        return mDeviceSelector;
-    }
-
-    public LanguageSelector getLanguageSelector(){
-        if (mLanguageSelector == null){
-            mLanguageSelector = new LanguageSelector();
-        }
-        return mLanguageSelector;
+        return mConfigSelector;
     }
 
     @Override
@@ -205,14 +245,14 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
     public FrameBufferBuffer() {
         setSize(412, 900);
         setPreferredSize(new Dimension(412, 900));
-        calibrateNativeBuffer();
+        renderNativeBuffer();
         addComponentListener(this);
         addMouseMotionListener(this);
     }
 
     @Override
     public void componentResized(ComponentEvent e) {
-        calibrateNativeBuffer();
+        renderNativeBuffer();
         repaint();
     }
     @Override
@@ -241,13 +281,12 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         mFrame = frame;
     }
 
-    public void calibrateNativeBuffer(){
-      DeviceInfo deviceInfo = DeviceInfoDB.getDeviceInfo(getDeviceSelector().currentDevice());
-      boolean magnified = getDeviceSelector().magnified();
-      renderNativeBuffer(deviceInfo, magnified);
-      repaint();
-    }
-    public int renderNativeBuffer(DeviceInfo deviceInfo, boolean magnified){
+    public void renderNativeBuffer(){
+        DeviceInfo deviceInfo = DeviceInfoDB.getDeviceInfo(getConfigSelector().currentDevice());
+        boolean magnified = getConfigSelector().magnified();
+        boolean inverted = getConfigSelector().inverted();
+        NativeRenderer.setLanguage(getConfigSelector().currentLocale());
+        NativeRenderer.setConfimationMessage(getConfigSelector().confirmationMessage());
         int w = deviceInfo.getWidthPx();
         int h = deviceInfo.getHeightPx();
         final int linestride = w;
@@ -262,7 +301,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
                 new int[]{rMask, gMask, bMask}, null);
             ColorModel colorModel = new DirectColorModel(bpp, rMask, gMask, bMask);
             BufferedImage image = new BufferedImage(colorModel, raster, true, null);
-            NativeRenderer.setDeviceInfo(deviceInfo, magnified);
+            NativeRenderer.setDeviceInfo(deviceInfo, magnified, inverted);
             error = NativeRenderer.renderBuffer(0, 0, w, h, linestride, mBuffer.getData());
             if (error != 0) {
                 System.out.println("Error rendering native buffer " + error);
@@ -270,12 +309,17 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
 
             mImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
             Graphics2D gc = mImage.createGraphics();
-            double scale = (double)getWidth()/(double)w;
+            double scale = 0.0;
+            if (w/(double)h > getWidth()/(double)getHeight()) {
+                scale = (double)getWidth()/(double)w;
+            } else {
+                scale = (double)getHeight()/(double)h;
+            }
             gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             gc.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             gc.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             gc.drawRenderedImage(image, AffineTransform.getScaleInstance(scale, scale));
         }
-        return error;
+        repaint();
     }
 }
