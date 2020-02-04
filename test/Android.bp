@@ -16,3 +16,24 @@ cc_test {
     ],
     host_supported: true,
 }
+
+cc_library_host_shared {
+    name: "libteeui_localization_rendering_test",
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-O0",
+    ],
+    export_include_dirs: ["include"],
+    srcs: [
+        "teeui_locale_test.cpp",
+    ],
+    static_libs: [
+        "libteeui_example_layout",
+        "libteeui",
+        "libft2.nodep",
+        "libteeui_localization",
+        "libgtest",
+    ],
+}
