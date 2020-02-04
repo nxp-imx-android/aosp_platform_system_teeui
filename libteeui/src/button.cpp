@@ -28,8 +28,7 @@ Error ButtonImpl::draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds,
                        const ConvexObjectInfo* coBegin, const ConvexObjectInfo* coEnd) {
 
     using intpxs = Coordinate<px, int64_t>;
-    Box<intpxs> intBounds(intpxs((int64_t)bounds.x().count()), intpxs((int64_t)bounds.y().count()),
-                          intpxs((int64_t)bounds.w().count()), intpxs((int64_t)bounds.h().count()));
+    Box<intpxs> intBounds(bounds);
 
     auto drawPixelBoundsEnforced = [&](uint32_t x, uint32_t y, Color color) -> Error {
         if (!intBounds.contains(Point<intpxs>(x, y))) {
@@ -123,15 +122,12 @@ Error ButtonImpl::draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds,
         }
     }
 
-    if (auto error = drawCorner(1, 0)) return error;
-    if (auto error = drawCorner(0, 1)) return error;
-    if (auto error = drawCorner(1, 1)) return error;
-
     auto centerbox = Box<intpxs>(intRadius, intRadius, intBounds.w() - intRadius - intRadius,
                                  intBounds.h() - intRadius - intRadius)
                          .translate(intBounds.topLeft());
 
     if (auto error = drawBox(centerbox, color_)) return error;
+
     if (auto error =
             drawBox(Box<intpxs>(0, intRadius, intRadius, intBounds.h() - intRadius - intRadius)
                         .translate(intBounds.topLeft()),

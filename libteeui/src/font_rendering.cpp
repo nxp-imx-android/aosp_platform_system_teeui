@@ -179,6 +179,7 @@ findLongestWordSequence(TextFace* face, const UTF8Range<const char*>& text,
             }
             pen += face->advance();
             previous = gindex;
+            ++c;
             if (workingBox.fitsInside(boundingBox)) {
                 currentBox = workingBox;
                 sequenceEnd = c;
@@ -187,7 +188,6 @@ findLongestWordSequence(TextFace* face, const UTF8Range<const char*>& text,
                 TEEUI_LOG << "exceeding bbox" << ENDL;
                 break;
             }
-            ++c;
         }
         if (exceedsBoundingBox) break;
         wordStart = wordEnd;
