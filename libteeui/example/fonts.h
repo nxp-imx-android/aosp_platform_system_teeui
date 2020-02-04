@@ -1,6 +1,5 @@
 /*
- *
- * Copyright 2019, The Android Open Source Project
+ * Copyright 2020, The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef LIBTEEUI_EXAMPLE_FONTS_H_
-#define LIBTEEUI_EXAMPLE_FONTS_H_
+#pragma once
 
 #include <teeui/incfont.h>
 
@@ -27,7 +25,6 @@
  * The first one pointing to a raw ttf font file in the .rodata section, and the second
  * beeing the size of the buffer.
  */
+TEEUI_INCFONT(RobotoMedium);
 TEEUI_INCFONT(RobotoRegular);
 TEEUI_INCFONT(Shield);
-
-#endif  // LIBTEEUI_EXAMPLE_FONTS_H_
