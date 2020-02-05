@@ -24,6 +24,7 @@ cc_test_host {
     srcs: [
         "test_main.cpp",
     ],
+    test_suites: ["general-tests"],
     shared_libs: [
         "libbase",
         "libteeui_localization_rendering_test",
@@ -56,10 +57,10 @@ configured with the values specific to the device.
             "native-test-flag": "--mm2px=<pixel per millimeter (px/mm) ratio>"
           },
           {
-            "native-test-flag": "--powerButtonTop=distance from the top of the power button to the top of the screen in mm>"
+            "native-test-flag": "--powerButtonTop=<distance from the top of the power button to the top of the screen in mm>"
           },
           {
-            "native-test-flag": "--powerButtonBottom=distance from the bottom of the power button to the top of the screen in mm>"
+            "native-test-flag": "--powerButtonBottom=<distance from the bottom of the power button to the top of the screen in mm>"
           },
           {
             "native-test-flag": "--volUpButtonTop=<distance from the top of the UP volume button to the top of the screen in mm>"
@@ -81,8 +82,8 @@ test configuration directory you will run the test from.
 ## Run test ##
 To run the tests against the TEST_MAPPING configurations use the following
 command:
-	atest --test-mapping <config directory>:all
-The <config directory> is where all the configuration files are located.
+	atest --test-mapping [src_path]:all
+more info on how to run atest can be found here: https://source.android.com/compatibility/tests/development/test-mapping
 
 It is possible to run the test as a binary and pass in configuration
 values as commandline parameters.
