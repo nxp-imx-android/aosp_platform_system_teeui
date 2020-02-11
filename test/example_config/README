@@ -2,7 +2,7 @@
 
 ## Setup ##
 Include the following three files in a new directory that you would want to run
-your test from. These files would be referred to as the configuration files. 
+your test from. These files would be referred to as the configuration files.
 * Android.bp
 * TEST_MAPPING
 * test_main.cpp
@@ -24,19 +24,24 @@ cc_test_host {
     srcs: [
         "test_main.cpp",
     ],
-    test_suites: ["general-tests"],
+    test_suites: ["device-tests"],
     shared_libs: [
         "libbase",
         "libteeui_localization_rendering_test",
     ],
+    static_libs: [
+        "libgtest",
+    ]
 }
+
 
 ## TEST_MAPPING ##
 The TEST_MAPPING file is going to run the test as a postsubmit test with the
 configuration parameters set within this file.
 
 The following is a template for the TEST_MAPPING file. All the flags should be
-configured with the values specific to the device.
+configured with the values specific to the device. If no configuration is
+provided, the values will default to the values for Blueline.
 
 {
   "postsubmit": [
