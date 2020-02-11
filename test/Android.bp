@@ -17,6 +17,7 @@ cc_test {
     host_supported: true,
 }
 
+
 cc_library_host_shared {
     name: "libteeui_localization_rendering_test",
     cflags: [
@@ -28,6 +29,7 @@ cc_library_host_shared {
     export_include_dirs: ["include"],
     srcs: [
         "teeui_locale_test.cpp",
+        "teeui_device_config.cpp"
     ],
     static_libs: [
         "libteeui_example_layout",
