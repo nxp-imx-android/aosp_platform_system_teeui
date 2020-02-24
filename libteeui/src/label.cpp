@@ -93,7 +93,7 @@ Error LabelImpl::draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds, Line
         ++curLine;
     }
 
-    if (!boundingBox) return Error::BBoxComputation;
+    if (!boundingBox) return Error::OK;
 
     TEEUI_LOG << "BoundingBox: " << *boundingBox << " Bounds: " << bounds << ENDL;
     Point<pxs> offset = bounds.topLeft();
