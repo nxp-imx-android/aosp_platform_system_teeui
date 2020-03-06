@@ -75,10 +75,21 @@ Error LabelImpl::draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds, Line
             findLongestWordSequence(&face, text_t(*textBegin, *text_.end()), bounds);
         if (error) return error;
 
-        if (rightJustified_)
-            pen = {-bBox.w(), pen.y()};
-        else
-            pen = {-bBox.x(), pen.y()};
+        pen = {-bBox.x(), pen.y()};
+
+        // check horizontal justification to set pen value
+        switch (horizontalTextAlignment_) {
+        case Alignment::LEFT:
+        case Alignment::TOP:
+        case Alignment::BOTTOM:
+            break;
+        case Alignment::CENTER:
+            pen += {(bounds.w() - bBox.w()) / 2.0_px, 0};
+            break;
+        case Alignment::RIGHT:
+            pen += {bounds.w() - bBox.w(), 0};
+            break;
+        }
 
         curLine->lineStart = pen;
         bBox.translateSelf(pen);
@@ -100,8 +111,10 @@ Error LabelImpl::draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds, Line
     offset -= {0, boundingBox->y()};
     TEEUI_LOG << "Offset: " << offset << ENDL;
 
-    if (rightJustified_) offset += {bounds.w(), 0};
-    if (verticallyCentered_) offset += {0, (bounds.h() - boundingBox->h()) / 2.0_px};
+    if (verticalTextAlignment_ == Alignment::CENTER)
+        offset += {0, (bounds.h() - boundingBox->h()) / 2.0_px};
+    else if (verticalTextAlignment_ == Alignment::BOTTOM)
+        offset += {0, (bounds.h() - boundingBox->h())};
 
     auto lineEnd = curLine;
     curLine = lineInfo->begin();
