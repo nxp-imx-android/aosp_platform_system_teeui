@@ -33,9 +33,12 @@ import java.awt.image.DirectColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.io.*;
+import java.util.Map;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.swing.*;
-
 
 public class FrameBufferBuffer extends JPanel implements ComponentListener, MouseMotionListener {
     public class MagnifiedView extends JPanel implements ComponentListener {
@@ -67,10 +70,13 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
 
         }
 
-        public int d() { return getWidth()/ 5; }
+        public int d() {
+            return getWidth() / 5;
+        }
 
         public void draw(RenderedImage image) {
-            if (mImage == null) return;
+            if (mImage == null)
+                return;
             Graphics2D gc = mImage.createGraphics();
             gc.drawRenderedImage(image, AffineTransform.getScaleInstance(5.0, 5.0));
             repaint();
@@ -85,9 +91,8 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
 
     }
 
-
     public class ConfigSelector extends JPanel implements ActionListener {
-        private final String languages [];
+        private final String languages[];
 
         {
             languages = NativeRenderer.getLanguageIdList();
@@ -153,7 +158,8 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             c.gridy = 3;
             this.add(new JLabel("Confirmation message:"), c);
 
-            confirmationMessage.setText("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
+            confirmationMessage.setText(
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
             confirmationMessage.addActionListener(this);
             c = new GridBagConstraints();
             c.gridx = 1;
@@ -163,7 +169,17 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             this.add(confirmationMessage, c);
         }
 
+        public void setConfiguration() {
+            Config config = Config.getInstance();
+            config.setValue(Config.KEY_DEVICE, currentDevice());
+            config.setValue(Config.KEY_LOCALE, getConfigSelector().currentLocale());
+            config.setValue(Config.KEY_MAGNIFIED, getConfigSelector().magnified());
+            config.setValue(Config.KEY_INVERTED, getConfigSelector().inverted());
+            config.setValue(Config.KEY_MESSAGE, getConfigSelector().confirmationMessage());
+        }
+
         public void actionPerformed(ActionEvent e) {
+            setConfiguration();
             FrameBufferBuffer.this.renderNativeBuffer();
         }
 
@@ -172,7 +188,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         }
 
         public String currentLocale() {
-            return (String)localeSelector.getSelectedItem();
+            return (String) localeSelector.getSelectedItem();
         }
 
         public boolean magnified() {
@@ -201,8 +217,8 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         return mMagnifiedView;
     }
 
-    public ConfigSelector getConfigSelector(){
-        if (mConfigSelector == null){
+    public ConfigSelector getConfigSelector() {
+        if (mConfigSelector == null) {
             mConfigSelector = new ConfigSelector();
         }
         return mConfigSelector;
@@ -221,16 +237,20 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             final int bMask = 0xff0000;
             final int bpp = 24;
             int d = mMagnifiedView.d();
-            int x = e.getX() - d/2;
+            int x = e.getX() - d / 2;
             if (x + d > mImage.getWidth()) {
                 x = mImage.getWidth() - d;
             }
-            if (x < 0) { x = 0; }
-            int y = e.getY() - d/2;
+            if (x < 0) {
+                x = 0;
+            }
+            int y = e.getY() - d / 2;
             if (y + d > mImage.getHeight()) {
                 y = mImage.getHeight() - d;
             }
-            if (y < 0) { y = 0; }
+            if (y < 0) {
+                y = 0;
+            }
             if (mImage.getWidth() < d) {
                 d = mImage.getWidth();
             }
@@ -241,10 +261,39 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         }
     }
 
+    public void setDefaultValues() {
+        Map<String, Object> configMap = Config.getInstance().getConfiguration();
+        if (configMap != null) {
+            Set set = configMap.entrySet();
+            Iterator iterator = set.iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, Object> element = (Map.Entry) iterator.next();
+                switch (element.getKey()) {
+                case Config.KEY_DEVICE:
+                    getConfigSelector().deviceSelector
+                            .setSelectedItem((DeviceInfoDB.Device.valueOf(((String) element.getValue()))));
+                    break;
+                case Config.KEY_LOCALE:
+                    getConfigSelector().localeSelector.setSelectedItem((String) element.getValue());
+                    break;
+                case Config.KEY_MAGNIFIED:
+                    getConfigSelector().magnifiedCheckbox.setSelected((Boolean) element.getValue());
+                    break;
+                case Config.KEY_INVERTED:
+                    getConfigSelector().invertedCheckbox.setSelected((Boolean) element.getValue());
+                    break;
+                case Config.KEY_MESSAGE:
+                    getConfigSelector().confirmationMessage.setText((String) element.getValue());
+                    break;
+                }
+            }
+        }
+    }
 
     public FrameBufferBuffer() {
         setSize(412, 900);
         setPreferredSize(new Dimension(412, 900));
+        setDefaultValues();
         renderNativeBuffer();
         addComponentListener(this);
         addMouseMotionListener(this);
@@ -255,6 +304,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         renderNativeBuffer();
         repaint();
     }
+
     @Override
     public void componentMoved(ComponentEvent e) {
 
@@ -277,11 +327,11 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         }
     }
 
-    public void setFrame(JFrame frame){
+    public void setFrame(JFrame frame) {
         mFrame = frame;
     }
 
-    public void renderNativeBuffer(){
+    public void renderNativeBuffer() {
         DeviceInfo deviceInfo = DeviceInfoDB.getDeviceInfo(getConfigSelector().currentDevice());
         boolean magnified = getConfigSelector().magnified();
         boolean inverted = getConfigSelector().inverted();
@@ -298,7 +348,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         synchronized (this) {
             mBuffer = new DataBufferInt(h * linestride);
             WritableRaster raster = Raster.createPackedRaster(mBuffer, w, h, linestride,
-                new int[]{rMask, gMask, bMask}, null);
+                    new int[] { rMask, gMask, bMask }, null);
             ColorModel colorModel = new DirectColorModel(bpp, rMask, gMask, bMask);
             BufferedImage image = new BufferedImage(colorModel, raster, true, null);
             NativeRenderer.setDeviceInfo(deviceInfo, magnified, inverted);
@@ -310,10 +360,10 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             mImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
             Graphics2D gc = mImage.createGraphics();
             double scale = 0.0;
-            if (w/(double)h > getWidth()/(double)getHeight()) {
-                scale = (double)getWidth()/(double)w;
+            if (w / (double) h > getWidth() / (double) getHeight()) {
+                scale = (double) getWidth() / (double) w;
             } else {
-                scale = (double)getHeight()/(double)h;
+                scale = (double) getHeight() / (double) h;
             }
             gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             gc.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
