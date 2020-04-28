@@ -3,7 +3,7 @@ cc_library_static {
     defaults: ["keystore_defaults"],
     export_include_dirs: ["include"],
     srcs: [
-         "ConfirmationUITranslations.c",
+         "ConfirmationUITranslations.cpp",
     ],
     host_supported: true,
 }
@@ -11,7 +11,7 @@ cc_library_static {
 cc_test {
     name: "ConfirmationUITranslations_test",
     srcs: [
-        "ConfirmationUITranslations-test.c",
+        "ConfirmationUITranslations-test.cpp",
     ],
     static_libs: [
         "libteeui_localization",
