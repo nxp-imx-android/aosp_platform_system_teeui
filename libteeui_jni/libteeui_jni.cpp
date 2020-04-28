@@ -16,9 +16,10 @@
  */
 
 #include <jni.h>
-#include <localization/ConfirmationUITranslations.h>
 #include <teeui/example/teeui.h>
+#include <teeui/localization/ConfirmationUITranslations.h>
 
+using teeui::localization::getLanguages;
 /*
  * JTypeTraits provides hints for JArray on how to access and free the array elements and how
  * to get the array size. The traits allow JArray to be used with jbyteArray, jintArray,
@@ -184,7 +185,7 @@ Java_com_android_framebufferizer_NativeRenderer_setLanguage(JNIEnv* env, jclass,
 extern "C" JNIEXPORT jobjectArray JNICALL
 Java_com_android_framebufferizer_NativeRenderer_getLanguageIdList(JNIEnv* env, jclass) {
     jobjectArray language_ids;
-    languages lang_list = ConfirmationUITranslations_get_languages();
+    teeui::localization::Languages lang_list = getLanguages();
     const char* const* native_data = lang_list.list;
     size_t list_size = lang_list.size;
 

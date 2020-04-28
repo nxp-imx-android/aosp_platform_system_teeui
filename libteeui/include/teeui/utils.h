@@ -999,4 +999,5 @@ template <typename Iterator> Range<Iterator> makeRange(Iterator begin, Iterator 
 
 #define LABELS(name, ...) using ::teeui::MetaList<__VA_ARGS__>
 
+#define TEXT_ID(textId) static_cast<uint32_t>(textId)
 #endif  // TEEUI_LIBTEEUI_UTILS_H_
