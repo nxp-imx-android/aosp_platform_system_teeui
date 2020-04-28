@@ -314,13 +314,20 @@ struct MetaParam<Name, Coordinate<Unit, Numeric>> {
     }
 };
 
-template <typename Name, typename ParamType> struct Param {
+template <typename Name, typename ParamType> class Param {
+  private:
     ParamType param_;
+
+  public:
     Param() : param_{} {}
     Param(const Param&) = default;
     Param(Param&&) = default;
     Param& operator=(const Param&) = default;
     Param& operator=(Param&&) = default;
+    inline const ParamType& operator*() const { return param_; }
+    inline ParamType& operator*() { return param_; }
+    inline const ParamType* operator->() const { return &param_; }
+    inline ParamType* operator->() { return &param_; }
 };
 
 template <typename Unit, typename Numeric> class Coordinate {
@@ -466,19 +473,19 @@ class context<MetaList<MetaParam<ParamsNames, ParamTypes>...>, Numeric> {
 
     template <typename MetaParam, typename = std::enable_if_t<isCoordinateParam<MetaParam>::value>>
     void setParam(const Coordinate<px, Numeric>& v) {
-        getParam<MetaParam>().param_ = v;
+        *getParam<MetaParam>() = v;
     }
 
     template <typename MetaParam, typename Unit, typename N,
               typename = std::enable_if_t<isCoordinateParam<MetaParam>::value>>
     void setParam(const Coordinate<Unit, N>& v) {
-        getParam<MetaParam>().param_ = *this = v;
+        *getParam<MetaParam>() = *this = v;
     }
 
     template <typename MetaParam>
     void setParam(std::enable_if_t<!isCoordinateParam<MetaParam>::value,
                                    const typename metaParam2ParamType<MetaParam>::type>& v) {
-        getParam<MetaParam>().param_ = v;
+        *getParam<MetaParam>() = v;
     }
 
     Proxy operator=(const Coordinate<px, Numeric>& rhs) const {
@@ -497,12 +504,12 @@ class context<MetaList<MetaParam<ParamsNames, ParamTypes>...>, Numeric> {
     template <typename ParamName, typename ParamType>
     std::enable_if_t<isCoordinateParam<MetaParam<ParamName, ParamType>>::value, Proxy>
     operator=(const MetaParam<ParamName, ParamType>&) const {
-        return {getParam<MetaParam<ParamName, ParamType>>().param_.count(), mm2px_, dp2px_};
+        return {getParam<MetaParam<ParamName, ParamType>>()->count(), mm2px_, dp2px_};
     }
     template <typename ParamName, typename ParamType>
     std::enable_if_t<!isCoordinateParam<MetaParam<ParamName, ParamType>>::value, const ParamType&>
     operator=(const MetaParam<ParamName, ParamType>&) const {
-        return getParam<MetaParam<ParamName, ParamType>>().param_;
+        return *getParam<MetaParam<ParamName, ParamType>>();
     }
     template <typename T,
               typename = std::enable_if_t<!(isMetaParam<T>::value || isCoordinateType<T>::value)>>
