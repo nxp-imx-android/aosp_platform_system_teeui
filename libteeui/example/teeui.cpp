@@ -17,8 +17,8 @@
 #include "layout.h"
 #include <cassert>
 #include <iostream>
-#include <localization/ConfirmationUITranslations.h>
 #include <teeui/example/teeui.h>
+#include <teeui/localization/ConfirmationUITranslations.h>
 #include <typeinfo>
 
 using namespace teeui;
@@ -57,7 +57,6 @@ uint32_t alfaCombineChannel(uint32_t shift, double alfa, uint32_t a, uint32_t b)
 template <typename T> uint32_t renderPixel(uint32_t x, uint32_t y, const T& e) {
     return e.bounds_.drawPoint(Point<pxs>(x, y));
 }
-
 
 struct FrameBuffer {
     uint32_t left_;
@@ -99,12 +98,13 @@ uint32_t setDeviceInfo(DeviceInfo deviceInfo, bool magnified, bool inverted) {
 }
 
 void selectLanguage(const char* language_id) {
-    ConfirmationUITranslations_select_lang_id(language_id);
+    teeui::localization::selectLangId(language_id);
 }
 
 void translate(LabelImpl* label) {
     uint64_t textId = label->textId();
-    const char* translation = ConfirmationUITranslations_lookup(textId);
+    const char* translation =
+        teeui::localization::lookup(static_cast<teeui::localization::TranslationId>(textId));
     label->setText({&translation[0], &translation[strlen(translation)]});
 }
 
