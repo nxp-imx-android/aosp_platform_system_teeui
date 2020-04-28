@@ -16,7 +16,7 @@
  */
 
 #include <jni.h>
-#include <teeui/example/teeui.h>
+#include <teeui/example/example.h>
 #include <teeui/localization/ConfirmationUITranslations.h>
 
 using teeui::localization::getLanguages;
@@ -124,6 +124,8 @@ using JIntArray = JArray<jintArray>;
 using JByteArray = JArray<jbyteArray>;
 using JString = JArray<jstring>;
 
+static std::unique_ptr<teeui::example::ITeeuiExample> sCurrentExample;
+
 /*
  * Class:     com_android_framebufferizer_NativeRenderer
  * Method:    setDeviceInfo
@@ -131,6 +133,7 @@ using JString = JArray<jstring>;
  */
 extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_setDeviceInfo(
     JNIEnv* env, jclass, jobject jDeviceInfo, jboolean magnified, jboolean inverted) {
+    using namespace teeui::example;
     jclass cDeviceInfo = env->FindClass("Lcom/android/framebufferizer/utils/DeviceInfo;");
     jmethodID method = env->GetMethodID(cDeviceInfo, "getWidthPx", "()I");
     DeviceInfo device_info;
@@ -149,7 +152,8 @@ extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRendere
     device_info.volUpButtonTopMm_ = env->CallDoubleMethod(jDeviceInfo, method);
     method = env->GetMethodID(cDeviceInfo, "getVolUpButtonBottomMm", "()D");
     device_info.volUpButtonBottomMm_ = env->CallDoubleMethod(jDeviceInfo, method);
-    return setDeviceInfo(device_info, magnified, inverted);
+    sCurrentExample = createExample(Examples::PhysButton);
+    return sCurrentExample->setDeviceInfo(device_info, magnified, inverted);
 }
 
 /*
@@ -161,9 +165,12 @@ extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRendere
     JNIEnv* env, jclass, jint x, jint y, jint width, jint height, jint lineStride,
     jintArray jbuffer) {
     JIntArray buffer(env, jbuffer);
-    if (!buffer) return 1;
-    return renderUIIntoBuffer((uint32_t)x, (uint32_t)y, (uint32_t)width, (uint32_t)height,
-                              (uint32_t)lineStride, (uint32_t*)buffer.begin(), buffer.size());
+    using namespace teeui::example;
+    if (!buffer) return kFrameBufferError;
+    if (!sCurrentExample) return kLayoutExampleError;
+    return sCurrentExample->renderUIIntoBuffer((uint32_t)x, (uint32_t)y, (uint32_t)width,
+                                               (uint32_t)height, (uint32_t)lineStride,
+                                               (uint32_t*)buffer.begin(), buffer.size());
 }
 /*
  * Class:     com_android_confirmationui_Translation_selectLangID
@@ -172,10 +179,8 @@ extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRendere
  */
 extern "C" JNIEXPORT void JNICALL
 Java_com_android_framebufferizer_NativeRenderer_setLanguage(JNIEnv* env, jclass, jstring jlang_id) {
-    jboolean isCopy = false;
-    const char* lang_id = (env)->GetStringUTFChars(jlang_id, &isCopy);
-    selectLanguage(lang_id);
-    (env)->ReleaseStringUTFChars(jlang_id, lang_id);
+    JString lang_id(env, jlang_id);
+    if (sCurrentExample) sCurrentExample->selectLanguage(lang_id.begin());
 }
 /*
  * Class:     com_android_confirmationui_Translation_selectLangID
@@ -206,5 +211,5 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_android_framebufferizer_NativeRenderer_setConfimationMessage(
     JNIEnv* env, jclass, jstring jConfirmationMessage) {
     JString confirmationMessage(env, jConfirmationMessage);
-    setConfirmationMessage(confirmationMessage.begin());
+    if (sCurrentExample) sCurrentExample->setConfirmationMessage(confirmationMessage.begin());
 }

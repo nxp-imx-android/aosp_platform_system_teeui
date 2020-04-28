@@ -259,7 +259,6 @@ template <typename Numeric> struct Div {
     }
 };
 
-template <typename Param, typename Numeric = DefaultNumericType> class context;
 template <typename T1, typename T2, typename Numeric, template <typename> class Op> struct BinOp;
 
 template <typename T1, typename T2, typename Numeric> using add = BinOp<T1, T2, Numeric, Add>;
@@ -434,6 +433,8 @@ template <typename ParamName, typename ParamType>
 struct isMetaParam<MetaParam<ParamName, ParamType>> {
     constexpr static const bool value = true;
 };
+
+template <typename Param, typename Numeric = DefaultNumericType> class context;
 
 template <typename... ParamsNames, typename... ParamTypes, typename Numeric>
 class context<MetaList<MetaParam<ParamsNames, ParamTypes>...>, Numeric> {

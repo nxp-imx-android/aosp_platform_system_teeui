@@ -332,11 +332,12 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
     }
 
     public void renderNativeBuffer() {
+        final int LAYOUT_EXAMPLE_ERROR = -2;
+        final int FRAME_BUFFER_ERROR = -1;
         DeviceInfo deviceInfo = DeviceInfoDB.getDeviceInfo(getConfigSelector().currentDevice());
         boolean magnified = getConfigSelector().magnified();
         boolean inverted = getConfigSelector().inverted();
-        NativeRenderer.setLanguage(getConfigSelector().currentLocale());
-        NativeRenderer.setConfimationMessage(getConfigSelector().confirmationMessage());
+
         int w = deviceInfo.getWidthPx();
         int h = deviceInfo.getHeightPx();
         final int linestride = w;
@@ -352,8 +353,14 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             ColorModel colorModel = new DirectColorModel(bpp, rMask, gMask, bMask);
             BufferedImage image = new BufferedImage(colorModel, raster, true, null);
             NativeRenderer.setDeviceInfo(deviceInfo, magnified, inverted);
+            NativeRenderer.setLanguage(getConfigSelector().currentLocale());
+            NativeRenderer.setConfimationMessage(getConfigSelector().confirmationMessage());
             error = NativeRenderer.renderBuffer(0, 0, w, h, linestride, mBuffer.getData());
-            if (error != 0) {
+            if(error == FRAME_BUFFER_ERROR){
+                System.out.println("Error framebuffer not initilized " + error);
+            } else if(error == LAYOUT_EXAMPLE_ERROR){
+                System.out.println("Error layout example not initilized " + error);
+            } else if (error != 0) {
                 System.out.println("Error rendering native buffer " + error);
             }
 

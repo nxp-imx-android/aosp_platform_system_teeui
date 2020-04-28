@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-#ifndef TEEUI_LIBTEEUI_INCLUDE_TEEUI_H_
-#define TEEUI_LIBTEEUI_INCLUDE_TEEUI_H_
-
 #include <stddef.h>
-#include <stdint.h>
+#include <string>
+
+#pragma once
+
+namespace teeui {
+namespace example {
 
 struct DeviceInfo {
     uint32_t width_;
@@ -32,12 +34,26 @@ struct DeviceInfo {
     double volUpButtonBottomMm_;
 };
 
-uint32_t setDeviceInfo(DeviceInfo device_info, bool magnified, bool inverted = false);
-uint32_t renderUIIntoBuffer(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t lineStride,
-                            uint32_t* buffer, size_t buffer_size_in_elements_not_bytes);
+class ITeeuiExample {
+  public:
+    virtual void selectLanguage(const char*) = 0;
+    virtual void setConfirmationMessage(std::string) = 0;
+    virtual uint32_t setDeviceInfo(DeviceInfo, bool, bool) = 0;
+    virtual uint32_t renderUIIntoBuffer(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t*,
+                                        size_t) = 0;
+    virtual void onEvent(uint32_t x, uint32_t y, uint32_t) = 0;
 
-void selectLanguage(const char* language_id);
+    virtual ~ITeeuiExample() {}
+};
 
-void setConfirmationMessage(const char* confirmationMessage);
+enum class Examples : uint32_t {
+    PhysButton,
+};
 
-#endif  // TEEUI_LIBTEEUI_INCLUDE_TEEUI_H_
+static constexpr const int8_t kFrameBufferError = -1;
+static constexpr const int8_t kLayoutExampleError = -2;
+
+std::unique_ptr<ITeeuiExample> createExample(Examples example);
+
+}  // namespace example
+}  // namespace teeui
