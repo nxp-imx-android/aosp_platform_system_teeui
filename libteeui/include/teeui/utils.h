@@ -851,23 +851,34 @@ template <typename Coord> std::ostream& operator<<(std::ostream& out, const Box<
 }
 #endif
 
-struct PixelDrawer {
-    Error (*const drawPixel_)(uint32_t, uint32_t, Color, const void* priv_data);
-    const void* priv_data_;
-    Error operator()(uint32_t x, uint32_t y, Color color) const {
-        return drawPixel_(x, y, color, priv_data_);
+template <typename Fn> struct Callback;
+
+template <typename Ret, typename... Args> struct Callback<Ret(Args...)> {
+    Ret (*callback_)(Args... args, void* priv_data);
+    void* priv_data_;
+    Ret operator()(Args... args) const { return callback_(args..., priv_data_); }
+};
+
+template <typename Ret, typename... Args>
+Callback<Ret(Args...)> makeCallback(Ret (*fn)(Args..., void*), void* priv_data) {
+    return {fn, priv_data};
+}
+
+template <typename Fn, typename Ret, typename... Args> struct CallbackHelper {
+    Fn fn_;
+    operator Callback<Ret(Args...)>() {
+        return makeCallback<Ret, Args...>(
+            [](Args... args, void* priv_data) -> Ret {
+                return reinterpret_cast<CallbackHelper*>(priv_data)->fn_(args...);
+            },
+            this);
     }
 };
 
-template <typename Fn> struct PixelDrawerHelper {
-    Fn fn_;
-    operator PixelDrawer() const {
-        return {[](uint32_t x, uint32_t y, Color color, const void* priv_data) -> Error {
-                    return reinterpret_cast<const PixelDrawerHelper*>(priv_data)->fn_(x, y, color);
-                },
-                this};
-    }
-};
+using PixelDrawer = Callback<Error(uint32_t, uint32_t, Color)>;
+
+template <typename Fn>
+using PixelDrawerHelper = CallbackHelper<Fn, Error, uint32_t, uint32_t, Color>;
 
 template <typename Fn> PixelDrawerHelper<Fn> makePixelDrawer(Fn fn) {
     return PixelDrawerHelper<Fn>{fn};
