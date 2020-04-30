@@ -18,7 +18,7 @@
 #ifndef LIBTEEUI_LABEL_H_
 #define LIBTEEUI_LABEL_H_
 
-#include "font_rendering.h"
+#include "utf8range.h"
 #include "utils.h"
 
 // #define DRAW_DEBUG_MARKERS
