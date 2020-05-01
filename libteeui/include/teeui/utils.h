@@ -464,9 +464,8 @@ class context<MetaList<MetaParam<ParamsNames, ParamTypes>...>, Numeric> {
         return std::get<typename metaParam2Param<MetaParam>::type>(params_);
     }
 
-    template <typename MetaParam>
-    void setParam(
-        std::enable_if_t<isCoordinateParam<MetaParam>::value, const Coordinate<px, Numeric>>& v) {
+    template <typename MetaParam, typename = std::enable_if_t<isCoordinateParam<MetaParam>::value>>
+    void setParam(const Coordinate<px, Numeric>& v) {
         getParam<MetaParam>().param_ = v;
     }
 
