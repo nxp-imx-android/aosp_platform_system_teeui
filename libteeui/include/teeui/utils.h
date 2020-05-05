@@ -859,6 +859,18 @@ template <typename Coord> std::ostream& operator<<(std::ostream& out, const Box<
 }
 #endif
 
+enum class EventType : uint8_t {
+    KeyDown,
+    KeyUp,
+    KeyMoved,
+};
+
+struct Event {
+    uint32_t x_;
+    uint32_t y_;
+    EventType event_;
+};
+
 template <typename Fn> struct Callback;
 
 template <typename Ret, typename... Args> struct Callback<Ret(Args...)> {
@@ -883,6 +895,7 @@ template <typename Fn, typename Ret, typename... Args> struct CallbackHelper {
     }
 };
 
+using CallbackEvent = Callback<Error(Event)>;
 using PixelDrawer = Callback<Error(uint32_t, uint32_t, Color)>;
 
 template <typename Fn>
@@ -901,6 +914,7 @@ template <typename Derived> struct LayoutElement {
                   context = Derived::dim_h} {}
 
     Error draw(const PixelDrawer&) { return Error::OK; }
+    Error hit(const Event&) { return Error::OK; }
 };
 
 template <typename... Elements, typename Context>

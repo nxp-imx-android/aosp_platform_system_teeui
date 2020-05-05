@@ -34,12 +34,36 @@ template <typename Layout> static void translateLabels(Layout* layout) {
 }
 
 class GUIStateTouch : public ITeeuiExample {
+  private:
+    bool okTapped_ = false;
+    bool cancelTapped_ = false;
+    EventResult eventResult_ = EventResult::NONE;
+
   public:
     bool inverted_;
     std::string confirmationMessage_;
     layout_t<ConfUILayout> layoutInstance_ = {};
 
-    GUIStateTouch() : inverted_(false), layoutInstance_{} {}
+    GUIStateTouch() : okTapped_(false), cancelTapped_(false), inverted_(false), layoutInstance_{} {}
+
+    bool isOkTapped() const { return okTapped_; }
+    bool isCancelTapped() const { return cancelTapped_; }
+
+    Error tapOk(Event e) {
+        if (e.event_ == EventType::KeyUp) {
+            okTapped_ = true;
+            eventResult_ = EventResult::CONFIRM;
+        }
+        return Error::OK;
+    }
+
+    Error tapCancel(Event e) {
+        if (e.event_ == EventType::KeyUp) {
+            cancelTapped_ = true;
+            eventResult_ = EventResult::CANCEL;
+        }
+        return Error::OK;
+    }
 
     void selectLanguage(const char* language_id) override {
         teeui::localization::selectLangId(language_id);
@@ -54,7 +78,7 @@ class GUIStateTouch : public ITeeuiExample {
 
     uint32_t setDeviceInfo(DeviceInfo device_info, bool magnified, bool inverted = false) override;
 
-    void onEvent(uint32_t, uint32_t, uint32_t) override {}
+    EventResult onEvent(uint32_t x, uint32_t y, uint32_t) override;
 
     uint32_t renderUIIntoBuffer(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t lineStride,
                                 uint32_t* buffer,
@@ -63,6 +87,13 @@ class GUIStateTouch : public ITeeuiExample {
 
 std::unique_ptr<ITeeuiExample> createTeeuiExample() {
     return std::make_unique<GUIStateTouch>();
+}
+
+EventResult GUIStateTouch::onEvent(uint32_t x, uint32_t y, uint32_t) {
+    eventResult_ = EventResult::NONE;
+    Event event{x, y, EventType::KeyUp};
+    handleAllEvent(layoutInstance_, event);
+    return eventResult_;
 }
 
 static context<ConfUIParameters> setLayoutParams(DeviceInfo& deviceInfo, bool magnified,
@@ -95,6 +126,16 @@ uint32_t GUIStateTouch::setDeviceInfo(DeviceInfo device_info, bool magnified, bo
     layoutInstance_ =
         instantiateLayout(ConfUILayout(), setLayoutParams(device_info, magnified, inverted));
     inverted_ = inverted;
+    std::get<LabelOK>(layoutInstance_)
+        .setCB(makeCallback<Error, Event>(
+            [](Event e, void* p) -> Error { return reinterpret_cast<GUIStateTouch*>(p)->tapOk(e); },
+            this));
+    std::get<LabelCancel>(layoutInstance_)
+        .setCB(makeCallback<Error, Event>(
+            [](Event e, void* p) -> Error {
+                return reinterpret_cast<GUIStateTouch*>(p)->tapCancel(e);
+            },
+            this));
     return 0;
 }
 

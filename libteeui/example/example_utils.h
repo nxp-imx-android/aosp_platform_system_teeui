@@ -60,6 +60,11 @@ Error drawElements(std::tuple<Elements...>& layout, const PixelDrawer& drawPixel
     return (std::get<Elements>(layout).draw(drawPixel) || ...);
 }
 
+template <typename... Elements>
+Error handleAllEvent(std::tuple<Elements...>& layout, const Event& event) {
+    return (std::get<Elements>(layout).hit(event) || ...);
+}
+
 void translate(LabelImpl* label);
 
 template <typename T, typename Layout> void translateLabel(Layout* layout) {

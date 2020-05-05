@@ -17,11 +17,6 @@
 package com.android.framebufferizer.utils;
 
 import com.android.framebufferizer.NativeRenderer;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -37,7 +32,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class FrameBufferBuffer extends JPanel implements ComponentListener, MouseMotionListener {
+public class FrameBufferBuffer extends JPanel implements ComponentListener, MouseMotionListener,
+        MouseListener {
     public class MagnifiedView extends JPanel implements ComponentListener {
         private BufferedImage mImage;
 
@@ -86,6 +82,19 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             }
         }
 
+    }
+
+    public static enum EVENT_RESULT{
+        NONE(0), CONFIRM(1) ,CANCEL(2);
+        private int id;
+
+        EVENT_RESULT(int id){
+          this.id = id;
+        }
+
+        public int getValue(){
+          return id;
+        }
     }
 
     public class ConfigSelector extends JPanel implements ActionListener {
@@ -219,6 +228,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
     private MagnifiedView mMagnifiedView;
     private ConfigSelector mConfigSelector;
     private JFrame mFrame;
+    private double mScale;
 
     public MagnifiedView getMagnifiedView() {
         if (mMagnifiedView == null) {
@@ -232,6 +242,36 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             mConfigSelector = new ConfigSelector();
         }
         return mConfigSelector;
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (e.MOUSE_RELEASED == MouseEvent.MOUSE_RELEASED) {
+            double x = e.getPoint().x / mScale;
+            double y = e.getPoint().y / mScale;
+            int value = NativeRenderer.onEvent((int)x, (int)y, MouseEvent.MOUSE_RELEASED);
+            if(value == EVENT_RESULT.CONFIRM.getValue()){
+                JOptionPane.showMessageDialog((Component) e.getSource(), "Confirm clicked.");
+            } else if (value == EVENT_RESULT.CANCEL.getValue()){
+                JOptionPane.showMessageDialog((Component) e.getSource(), "Cancel clicked.");
+            }
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e){
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e){
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e){
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e){
     }
 
     @Override
@@ -310,6 +350,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         renderNativeBuffer();
         addComponentListener(this);
         addMouseMotionListener(this);
+        addMouseListener(this);
     }
 
     @Override
@@ -380,16 +421,15 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
 
             mImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
             Graphics2D gc = mImage.createGraphics();
-            double scale = 0.0;
             if (w / (double) h > getWidth() / (double) getHeight()) {
-                scale = (double) getWidth() / (double) w;
+                mScale = (double) getWidth() / (double) w;
             } else {
-                scale = (double) getHeight() / (double) h;
+                mScale = (double) getHeight() / (double) h;
             }
             gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             gc.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             gc.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            gc.drawRenderedImage(image, AffineTransform.getScaleInstance(scale, scale));
+            gc.drawRenderedImage(image, AffineTransform.getScaleInstance(mScale, mScale));
         }
         repaint();
     }

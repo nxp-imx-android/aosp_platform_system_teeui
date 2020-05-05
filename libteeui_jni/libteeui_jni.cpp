@@ -214,3 +214,16 @@ Java_com_android_framebufferizer_NativeRenderer_setConfimationMessage(
     JString confirmationMessage(env, jConfirmationMessage);
     if (sCurrentExample) sCurrentExample->setConfirmationMessage(confirmationMessage.begin());
 }
+
+/*
+ * Class:     com_android_framebufferizer_NativeRenderer
+ * Method:    onEvent
+ * Signature: (III)I
+ */
+extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_onEvent(
+    JNIEnv*, jclass, jint x, jint y, jint event) {
+    if (sCurrentExample) {
+        return (jint)sCurrentExample->onEvent((uint32_t)x, (uint32_t)y, (uint32_t)event);
+    }
+    return 0;
+}

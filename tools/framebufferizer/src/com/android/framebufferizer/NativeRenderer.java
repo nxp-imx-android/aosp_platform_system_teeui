@@ -28,4 +28,5 @@ public class NativeRenderer {
     public static native void setLanguage(String language_id);
     public static native String[] getLanguageIdList();
     public static native void setConfimationMessage(String confimationMessage);
+    public static native int onEvent(int x, int y, int event);
 }

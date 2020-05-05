@@ -34,6 +34,12 @@ struct DeviceInfo {
     double volUpButtonBottomMm_;
 };
 
+enum class EventResult : uint32_t {
+    NONE,
+    CONFIRM,
+    CANCEL,
+};
+
 class ITeeuiExample {
   public:
     virtual void selectLanguage(const char*) = 0;
@@ -41,7 +47,7 @@ class ITeeuiExample {
     virtual uint32_t setDeviceInfo(DeviceInfo, bool, bool) = 0;
     virtual uint32_t renderUIIntoBuffer(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t*,
                                         size_t) = 0;
-    virtual void onEvent(uint32_t x, uint32_t y, uint32_t) = 0;
+    virtual EventResult onEvent(uint32_t x, uint32_t y, uint32_t) = 0;
 
     virtual ~ITeeuiExample() {}
 };

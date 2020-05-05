@@ -47,6 +47,14 @@ Java_com_android_framebufferizer_NativeRenderer_getLanguageIdList(JNIEnv*, jclas
 JNIEXPORT void JNICALL
 Java_com_android_framebufferizer_NativeRenderer_setConfimationMessage(JNIEnv*, jclass, jstring);
 
+/*
+ * Class:     com_android_framebufferizer_NativeRenderer
+ * Method:    onEvent
+ * Signature: (III)I
+ */
+JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_onEvent(JNIEnv*, jclass,
+                                                                               jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

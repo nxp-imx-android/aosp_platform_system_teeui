@@ -55,7 +55,7 @@ class GUIStatePhysButtons : public ITeeuiExample {
     }
 
     uint32_t setDeviceInfo(DeviceInfo device_info, bool magnified, bool inverted = false) override;
-    void onEvent(uint32_t, uint32_t, uint32_t) override {}
+    EventResult onEvent(uint32_t, uint32_t, uint32_t) override { return EventResult::NONE; }
 
     uint32_t renderUIIntoBuffer(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t lineStride,
                                 uint32_t* buffer,
