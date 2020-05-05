@@ -6,6 +6,7 @@ cc_library_static {
         "example_utils.cpp",
         "fonts.S",
         "phys_button_example.cpp",
+        "touch_button_example.cpp",
     ],
     static_libs: [
         "libft2.nodep",

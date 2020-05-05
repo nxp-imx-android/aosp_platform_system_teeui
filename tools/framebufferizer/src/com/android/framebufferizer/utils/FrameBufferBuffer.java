@@ -17,28 +17,25 @@
 package com.android.framebufferizer.utils;
 
 import com.android.framebufferizer.NativeRenderer;
-
-import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.DataBufferInt;
+import java.awt.image.RenderedImage;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.io.*;
-import java.util.Map;
-import java.util.Iterator;
-import java.util.Set;
-
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 public class FrameBufferBuffer extends JPanel implements ComponentListener, MouseMotionListener {
     public class MagnifiedView extends JPanel implements ComponentListener {
@@ -101,6 +98,8 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         private JComboBox<String> deviceSelector = new JComboBox(DeviceInfoDB.Device.values());
         private JCheckBox magnifiedCheckbox = new JCheckBox("Magnified");
         private JCheckBox invertedCheckbox = new JCheckBox("Inverted");
+        private JCheckBox touchCheckbox = new JCheckBox("Touch layout");
+
         private JComboBox<String> localeSelector = new JComboBox(languages);
         private JTextField confirmationMessage = new JTextField();
 
@@ -153,6 +152,12 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             c.gridy = 2;
             this.add(invertedCheckbox, c);
 
+            touchCheckbox.addActionListener(this);
+            c = new GridBagConstraints();
+            c.gridx = 3;
+            c.gridy = 2;
+            this.add(touchCheckbox, c);
+
             c = new GridBagConstraints();
             c.gridx = 0;
             c.gridy = 3;
@@ -176,6 +181,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             config.setValue(Config.KEY_MAGNIFIED, getConfigSelector().magnified());
             config.setValue(Config.KEY_INVERTED, getConfigSelector().inverted());
             config.setValue(Config.KEY_MESSAGE, getConfigSelector().confirmationMessage());
+            config.setValue(Config.KEY_TOUCH, getConfigSelector().touched());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -197,6 +203,10 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
 
         public boolean inverted() {
             return invertedCheckbox.isSelected();
+        }
+
+        public boolean touched() {
+            return touchCheckbox.isSelected();
         }
 
         public String confirmationMessage() {
@@ -285,6 +295,9 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
                 case Config.KEY_MESSAGE:
                     getConfigSelector().confirmationMessage.setText((String) element.getValue());
                     break;
+                case Config.KEY_TOUCH:
+                    getConfigSelector().touchCheckbox.setSelected((Boolean) element.getValue());
+                    break;
                 }
             }
         }
@@ -337,6 +350,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         DeviceInfo deviceInfo = DeviceInfoDB.getDeviceInfo(getConfigSelector().currentDevice());
         boolean magnified = getConfigSelector().magnified();
         boolean inverted = getConfigSelector().inverted();
+        boolean touched = getConfigSelector().touched();
 
         int w = deviceInfo.getWidthPx();
         int h = deviceInfo.getHeightPx();
@@ -352,7 +366,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
                     new int[] { rMask, gMask, bMask }, null);
             ColorModel colorModel = new DirectColorModel(bpp, rMask, gMask, bMask);
             BufferedImage image = new BufferedImage(colorModel, raster, true, null);
-            NativeRenderer.setDeviceInfo(deviceInfo, magnified, inverted);
+            NativeRenderer.setDeviceInfo(deviceInfo, magnified, inverted, touched);
             NativeRenderer.setLanguage(getConfigSelector().currentLocale());
             NativeRenderer.setConfimationMessage(getConfigSelector().confirmationMessage());
             error = NativeRenderer.renderBuffer(0, 0, w, h, linestride, mBuffer.getData());

@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (Lcom/android/framebufferizer/utils/DeviceInfo;ZZ)I
  */
 JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_setDeviceInfo(
-    JNIEnv*, jclass, jobject, jboolean, jboolean);
+    JNIEnv*, jclass, jobject, jboolean, jboolean, jboolean);
 
 /*
  * Class:     com_android_framebufferizer_NativeRenderer

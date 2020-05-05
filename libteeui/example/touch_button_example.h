@@ -1,5 +1,6 @@
 /*
- * Copyright 2020, The Android Open Source Project
+ *
+ * Copyright 2019, The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +15,17 @@
  * limitations under the License.
  */
 
-#include "phys_button_example.h"
-#include "touch_button_example.h"
+#pragma once
+
+#include <memory>
+#include <teeui/example/example.h>
 
 namespace teeui {
 namespace example {
+namespace touch_button {
 
-std::unique_ptr<ITeeuiExample> createExample(Examples example) {
-    switch (example) {
-    case Examples::PhysButton:
-        return phys_button::createTeeuiExample();
-    case Examples::TouchButton:
-        return touch_button::createTeeuiExample();
-    }
+std::unique_ptr<ITeeuiExample> createTeeuiExample();
+
 }
-
 }  // namespace example
 }  // namespace teeui

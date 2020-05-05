@@ -132,7 +132,8 @@ static std::unique_ptr<teeui::example::ITeeuiExample> sCurrentExample;
  * Signature: (Lcom/android/framebufferizer/utils/DeviceInfo;ZZ)I
  */
 extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_setDeviceInfo(
-    JNIEnv* env, jclass, jobject jDeviceInfo, jboolean magnified, jboolean inverted) {
+    JNIEnv* env, jclass, jobject jDeviceInfo, jboolean magnified, jboolean inverted,
+    jboolean touchLayout) {
     using namespace teeui::example;
     jclass cDeviceInfo = env->FindClass("Lcom/android/framebufferizer/utils/DeviceInfo;");
     jmethodID method = env->GetMethodID(cDeviceInfo, "getWidthPx", "()I");
@@ -152,7 +153,7 @@ extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRendere
     device_info.volUpButtonTopMm_ = env->CallDoubleMethod(jDeviceInfo, method);
     method = env->GetMethodID(cDeviceInfo, "getVolUpButtonBottomMm", "()D");
     device_info.volUpButtonBottomMm_ = env->CallDoubleMethod(jDeviceInfo, method);
-    sCurrentExample = createExample(Examples::PhysButton);
+    sCurrentExample = createExample(touchLayout ? Examples::TouchButton : Examples::PhysButton);
     return sCurrentExample->setDeviceInfo(device_info, magnified, inverted);
 }
 

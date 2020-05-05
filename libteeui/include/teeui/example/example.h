@@ -48,6 +48,7 @@ class ITeeuiExample {
 
 enum class Examples : uint32_t {
     PhysButton,
+    TouchButton,
 };
 
 static constexpr const int8_t kFrameBufferError = -1;
