@@ -59,6 +59,15 @@ enum class Examples : uint32_t {
 
 static constexpr const int8_t kFrameBufferError = -1;
 static constexpr const int8_t kLayoutExampleError = -2;
+static constexpr const char* kPhysButtonLayout = "Physical button";
+static constexpr const char* kTouchButtonLayout = "Touch button";
+
+static constexpr const char* kAvailableLayouts[] = {
+    kPhysButtonLayout,
+    kTouchButtonLayout,
+};
+
+#define NUM_LAYOUTS ((sizeof(kAvailableLayouts) / sizeof(kAvailableLayouts[0])))
 
 std::unique_ptr<ITeeuiExample> createExample(Examples example);
 

@@ -104,13 +104,15 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             languages = NativeRenderer.getLanguageIdList();
         }
 
+        private final String layouts[] = NativeRenderer.getAvailableLayouts();
         private JComboBox<String> deviceSelector = new JComboBox(DeviceInfoDB.Device.values());
         private JCheckBox magnifiedCheckbox = new JCheckBox("Magnified");
         private JCheckBox invertedCheckbox = new JCheckBox("Inverted");
-        private JCheckBox touchCheckbox = new JCheckBox("Touch layout");
 
         private JComboBox<String> localeSelector = new JComboBox(languages);
         private JTextField confirmationMessage = new JTextField();
+
+        private JComboBox<String> layoutSelector = new JComboBox(layouts);
 
         protected ConfigSelector() {
             System.err.println("ConfigSelector");
@@ -147,29 +149,36 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             c = new GridBagConstraints();
             c.gridx = 0;
             c.gridy = 2;
+            this.add(new JLabel("Select Layout:"), c);
+
+            layoutSelector.addActionListener(this);
+            c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 2;
+            c.gridwidth = 2;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            this.add(layoutSelector, c);
+
+            c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 3;
             this.add(new JLabel("UIOptions:"), c);
 
             magnifiedCheckbox.addActionListener(this);
             c = new GridBagConstraints();
             c.gridx = 1;
-            c.gridy = 2;
+            c.gridy = 3;
             this.add(magnifiedCheckbox, c);
 
             invertedCheckbox.addActionListener(this);
             c = new GridBagConstraints();
             c.gridx = 2;
-            c.gridy = 2;
+            c.gridy = 3;
             this.add(invertedCheckbox, c);
-
-            touchCheckbox.addActionListener(this);
-            c = new GridBagConstraints();
-            c.gridx = 3;
-            c.gridy = 2;
-            this.add(touchCheckbox, c);
 
             c = new GridBagConstraints();
             c.gridx = 0;
-            c.gridy = 3;
+            c.gridy = 4;
             this.add(new JLabel("Confirmation message:"), c);
 
             confirmationMessage.setText(
@@ -177,7 +186,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             confirmationMessage.addActionListener(this);
             c = new GridBagConstraints();
             c.gridx = 1;
-            c.gridy = 3;
+            c.gridy = 4;
             c.fill = GridBagConstraints.BOTH;
             c.gridwidth = 2;
             this.add(confirmationMessage, c);
@@ -190,7 +199,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             config.setValue(Config.KEY_MAGNIFIED, getConfigSelector().magnified());
             config.setValue(Config.KEY_INVERTED, getConfigSelector().inverted());
             config.setValue(Config.KEY_MESSAGE, getConfigSelector().confirmationMessage());
-            config.setValue(Config.KEY_TOUCH, getConfigSelector().touched());
+            config.setValue(Config.KEY_LAYOUT, getConfigSelector().currentLayout());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -206,16 +215,16 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
             return (String) localeSelector.getSelectedItem();
         }
 
+        public String currentLayout() {
+            return (String) layoutSelector.getSelectedItem();
+        }
+
         public boolean magnified() {
             return magnifiedCheckbox.isSelected();
         }
 
         public boolean inverted() {
             return invertedCheckbox.isSelected();
-        }
-
-        public boolean touched() {
-            return touchCheckbox.isSelected();
         }
 
         public String confirmationMessage() {
@@ -335,8 +344,8 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
                 case Config.KEY_MESSAGE:
                     getConfigSelector().confirmationMessage.setText((String) element.getValue());
                     break;
-                case Config.KEY_TOUCH:
-                    getConfigSelector().touchCheckbox.setSelected((Boolean) element.getValue());
+                case Config.KEY_LAYOUT:
+                    getConfigSelector().layoutSelector.setSelectedItem((String) element.getValue());
                     break;
                 }
             }
@@ -391,7 +400,6 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
         DeviceInfo deviceInfo = DeviceInfoDB.getDeviceInfo(getConfigSelector().currentDevice());
         boolean magnified = getConfigSelector().magnified();
         boolean inverted = getConfigSelector().inverted();
-        boolean touched = getConfigSelector().touched();
 
         int w = deviceInfo.getWidthPx();
         int h = deviceInfo.getHeightPx();
@@ -407,7 +415,7 @@ public class FrameBufferBuffer extends JPanel implements ComponentListener, Mous
                     new int[] { rMask, gMask, bMask }, null);
             ColorModel colorModel = new DirectColorModel(bpp, rMask, gMask, bMask);
             BufferedImage image = new BufferedImage(colorModel, raster, true, null);
-            NativeRenderer.setDeviceInfo(deviceInfo, magnified, inverted, touched);
+            NativeRenderer.setDeviceInfo(deviceInfo, magnified, inverted, getConfigSelector().currentLayout());
             NativeRenderer.setLanguage(getConfigSelector().currentLocale());
             NativeRenderer.setConfimationMessage(getConfigSelector().confirmationMessage());
             error = NativeRenderer.renderBuffer(0, 0, w, h, linestride, mBuffer.getData());

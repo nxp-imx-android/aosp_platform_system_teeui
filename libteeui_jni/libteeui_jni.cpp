@@ -129,11 +129,12 @@ static std::unique_ptr<teeui::example::ITeeuiExample> sCurrentExample;
 /*
  * Class:     com_android_framebufferizer_NativeRenderer
  * Method:    setDeviceInfo
- * Signature: (Lcom/android/framebufferizer/utils/DeviceInfo;ZZ)I
+ * Signature: (Lcom/android/framebufferizer/utils/DeviceInfo;ZZLjava/lang/String;)I
  */
 extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRenderer_setDeviceInfo(
     JNIEnv* env, jclass, jobject jDeviceInfo, jboolean magnified, jboolean inverted,
-    jboolean touchLayout) {
+    jstring layout_type) {
+    JString layout(env, layout_type);
     using namespace teeui::example;
     jclass cDeviceInfo = env->FindClass("Lcom/android/framebufferizer/utils/DeviceInfo;");
     jmethodID method = env->GetMethodID(cDeviceInfo, "getWidthPx", "()I");
@@ -153,7 +154,9 @@ extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRendere
     device_info.volUpButtonTopMm_ = env->CallDoubleMethod(jDeviceInfo, method);
     method = env->GetMethodID(cDeviceInfo, "getVolUpButtonBottomMm", "()D");
     device_info.volUpButtonBottomMm_ = env->CallDoubleMethod(jDeviceInfo, method);
-    sCurrentExample = createExample(touchLayout ? Examples::TouchButton : Examples::PhysButton);
+    sCurrentExample =
+        createExample((strcmp(layout.begin(), kTouchButtonLayout) == 0) ? Examples::TouchButton
+                                                                        : Examples::PhysButton);
     return sCurrentExample->setDeviceInfo(device_info, magnified, inverted);
 }
 
@@ -173,6 +176,7 @@ extern "C" JNIEXPORT jint JNICALL Java_com_android_framebufferizer_NativeRendere
                                                (uint32_t)height, (uint32_t)lineStride,
                                                (uint32_t*)buffer.begin(), buffer.size());
 }
+
 /*
  * Class:     com_android_confirmationui_Translation_selectLangID
  * Method:    selectLangID
@@ -203,6 +207,28 @@ Java_com_android_framebufferizer_NativeRenderer_getLanguageIdList(JNIEnv* env, j
 
     return language_ids;
 }
+
+/*
+ * Class:     com_android_framebufferizer_NativeRenderer
+ * Method:    getAvailableLayouts
+ * Signature: ()[Ljava/lang/String;
+ */
+extern "C" JNIEXPORT jobjectArray JNICALL
+Java_com_android_framebufferizer_NativeRenderer_getAvailableLayouts(JNIEnv* env, jclass) {
+    using namespace teeui::example;
+    jobjectArray available_layouts;
+    const char* const* native_data = kAvailableLayouts;
+    size_t list_size = NUM_LAYOUTS;
+
+    available_layouts = (jobjectArray)env->NewObjectArray(
+        list_size, env->FindClass("java/lang/String"), env->NewStringUTF(""));
+
+    for (size_t i = 0; i < list_size; i++)
+        env->SetObjectArrayElement(available_layouts, i, env->NewStringUTF(native_data[i]));
+
+    return available_layouts;
+}
+
 /*
  * Class:     com_android_framebufferizer_NativeRenderer
  * Method:    setConfimationMessage
