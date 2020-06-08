@@ -30,6 +30,7 @@ import org.json.JSONException;
 public class Config {
     public static final String KEY_MAGNIFIED = "magnified";
     public static final String KEY_INVERTED = "inverted";
+    public static final String KEY_LAYOUT = "layout";
     public static final String KEY_LOCALE = "locale";
     public static final String KEY_DEVICE = "device";
     public static final String KEY_MESSAGE = "message";

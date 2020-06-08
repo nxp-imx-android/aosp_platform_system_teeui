@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-#pragma once
+#include "phys_button_example.h"
+#include "touch_button_example.h"
 
 namespace teeui {
+namespace example {
 
-namespace test {
+std::unique_ptr<ITeeuiExample> createExample(Examples example) {
+    switch (example) {
+    case Examples::PhysButton:
+        return phys_button::createTeeuiExample();
+    case Examples::TouchButton:
+        return touch_button::createTeeuiExample();
+    }
+}
 
-// Initializes the test with the device configuration with command line params.
-extern void initRenderTest(int argc, char** argv);
-
-extern int runRenderTest(const char* language, bool magnified, bool inverted = false,
-                         const char* confirmationMessage = "", const char* layout = "");
-
-}  // namespace test
-
+}  // namespace example
 }  // namespace teeui
