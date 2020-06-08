@@ -259,7 +259,6 @@ template <typename Numeric> struct Div {
     }
 };
 
-template <typename Param, typename Numeric = DefaultNumericType> class context;
 template <typename T1, typename T2, typename Numeric, template <typename> class Op> struct BinOp;
 
 template <typename T1, typename T2, typename Numeric> using add = BinOp<T1, T2, Numeric, Add>;
@@ -434,6 +433,8 @@ template <typename ParamName, typename ParamType>
 struct isMetaParam<MetaParam<ParamName, ParamType>> {
     constexpr static const bool value = true;
 };
+
+template <typename Param, typename Numeric = DefaultNumericType> class context;
 
 template <typename... ParamsNames, typename... ParamTypes, typename Numeric>
 class context<MetaList<MetaParam<ParamsNames, ParamTypes>...>, Numeric> {
@@ -858,6 +859,18 @@ template <typename Coord> std::ostream& operator<<(std::ostream& out, const Box<
 }
 #endif
 
+enum class EventType : uint8_t {
+    KeyDown,
+    KeyUp,
+    KeyMoved,
+};
+
+struct Event {
+    uint32_t x_;
+    uint32_t y_;
+    EventType event_;
+};
+
 template <typename Fn> struct Callback;
 
 template <typename Ret, typename... Args> struct Callback<Ret(Args...)> {
@@ -882,6 +895,7 @@ template <typename Fn, typename Ret, typename... Args> struct CallbackHelper {
     }
 };
 
+using CallbackEvent = Callback<Error(Event)>;
 using PixelDrawer = Callback<Error(uint32_t, uint32_t, Color)>;
 
 template <typename Fn>
@@ -900,6 +914,7 @@ template <typename Derived> struct LayoutElement {
                   context = Derived::dim_h} {}
 
     Error draw(const PixelDrawer&) { return Error::OK; }
+    Error hit(const Event&) { return Error::OK; }
 };
 
 template <typename... Elements, typename Context>
