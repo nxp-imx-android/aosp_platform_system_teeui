@@ -83,6 +83,9 @@ class LabelImpl {
     uint64_t textId() const { return textId_; }
 
     Error draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds, LineInfo* lineInfo);
+    void setCB(CallbackEvent cbEvent) { cbEvent_ = std::move(cbEvent); }
+    optional<CallbackEvent> getCB() { return cbEvent_; }
+    Error hit(const Event& event, const Box<pxs>& bounds);
 
   private:
     pxs fontSize_;
@@ -93,6 +96,7 @@ class LabelImpl {
     Color textColor_;
     FontBuffer font_;
     uint64_t textId_;
+    optional<CallbackEvent> cbEvent_;
 };
 
 /**
@@ -124,6 +128,8 @@ template <typename Derived> class Label : public LayoutElement<Derived>, public 
         LabelImpl::LineInfo lineInfo = {Derived::label_number_of_lines, lines};
         return LabelImpl::draw(drawPixel, this->bounds_, &lineInfo);
     }
+
+    Error hit(const Event& event) { return LabelImpl::hit(event, this->bounds_); }
 };
 
 }  //  namespace teeui

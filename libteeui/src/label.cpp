@@ -136,4 +136,14 @@ Error LabelImpl::draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds, Line
     return Error::OK;
 }
 
+Error LabelImpl::hit(const Event& event, const Box<pxs>& bounds) {
+    using intpxs = Coordinate<px, int64_t>;
+    if (bounds.contains(Point<intpxs>(event.x_, event.y_))) {
+        optional<CallbackEvent> callback = getCB();
+        if (callback) {
+            return callback.value()(event);
+        }
+    }
+    return Error::OK;
+}
 }  // namespace teeui
