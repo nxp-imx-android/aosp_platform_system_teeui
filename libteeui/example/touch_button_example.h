@@ -1,5 +1,6 @@
 /*
- * Copyright 2020, The Android Open Source Project
+ *
+ * Copyright 2019, The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +17,15 @@
 
 #pragma once
 
+#include <memory>
+#include <teeui/example/example.h>
+
 namespace teeui {
+namespace example {
+namespace touch_button {
 
-namespace test {
+std::unique_ptr<ITeeuiExample> createTeeuiExample();
 
-// Initializes the test with the device configuration with command line params.
-extern void initRenderTest(int argc, char** argv);
-
-extern int runRenderTest(const char* language, bool magnified, bool inverted = false,
-                         const char* confirmationMessage = "", const char* layout = "");
-
-}  // namespace test
-
+}
+}  // namespace example
 }  // namespace teeui
