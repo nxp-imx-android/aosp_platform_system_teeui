@@ -34,6 +34,7 @@ enum class Command : uint32_t {
     FetchConfirmationResult,
     DeliverTestCommand,
     Abort,
+    GetSecureUIParams,
 };
 
 using Protocol = uint32_t;
@@ -49,6 +50,7 @@ DECLARE_GENERIC_COMMAND(PromptUserConfirmation);
 DECLARE_GENERIC_COMMAND(FetchConfirmationResult);
 DECLARE_GENERIC_COMMAND(DeliverTestCommand);
 DECLARE_GENERIC_COMMAND(Abort);
+DECLARE_GENERIC_COMMAND(GetSecureUIParams);
 
 using PromptUserConfirmationMsg = Message<CmdPromptUserConfirmation, MsgString, MsgVector<uint8_t>,
                                           MsgString, MsgVector<UIOption>>;
@@ -58,6 +60,9 @@ using DeliverTestCommandResponse = Message<ResponseCode>;
 using AbortMsg = Message<CmdAbort>;
 using ResultMsg = Message<ResponseCode, MsgVector<uint8_t>, MsgVector<uint8_t>>;
 using FetchConfirmationResult = Message<CmdFetchConfirmationResult>;
+using GetSecureUIParamsMsg = Message<CmdGetSecureUIParams>;
+using GetSecureUIParamsResponse = Message<ResponseCode, MsgVector<uint32_t>>;
+
 
 template <uint32_t proto, typename CmdT, CmdT cmd>
 inline WriteStream write(WriteStream out, Cmd<proto, CmdT, cmd>) {
