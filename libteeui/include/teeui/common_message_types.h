@@ -148,6 +148,17 @@ inline WriteStream write(WriteStream out, const MsgVector<UIOption>& v) {
     return writeSimpleVec(out, v);
 }
 
+inline WriteStream write(WriteStream out, const MsgVector<uint32_t>& v) {
+    return writeSimpleVec(out, v);
+}
+
+inline std::tuple<ReadStream, MsgVector<uint32_t>> read(Message<MsgVector<uint32_t>>,
+                                                        ReadStream in) {
+    return readSimpleVecInPlace<uint32_t>(in);
+}
+
+
+
 }  //  namespace msg
 
 // teeui::Array<uint8_t, size>
