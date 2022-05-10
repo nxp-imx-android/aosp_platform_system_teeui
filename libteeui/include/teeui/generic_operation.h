@@ -147,6 +147,10 @@ template <typename Derived, typename TimeStamp> class Operation {
         }
     }
 
+    MsgVector<uint32_t> getSecureUIParams() {
+        return static_cast<Derived*>(this)->getSecureUIParams();
+    }
+
     std::tuple<ResponseCode, MsgVector<uint8_t>, MsgVector<uint8_t>> fetchConfirmationResult() {
         std::tuple<ResponseCode, MsgVector<uint8_t>, MsgVector<uint8_t>> result;
         auto& [rc, message, token] = result;
@@ -206,6 +210,8 @@ template <typename Derived, typename TimeStamp> class Operation {
                 return command(CmdDeliverTestCommand(), in_cmd, out);
             case Command::Abort:
                 return command(CmdAbort(), in_cmd, out);
+            case Command::GetSecureUIParams:
+                return command(CmdGetSecureUIParams(), in_cmd, out);
             default:
                 return write(Message<ResponseCode>(), out, ResponseCode::Unimplemented);
             }
@@ -244,6 +250,11 @@ template <typename Derived, typename TimeStamp> class Operation {
     WriteStream command(CmdAbort, ReadStream in, WriteStream out) {
         abort();
         return out;
+    }
+    WriteStream command(CmdGetSecureUIParams, ReadStream in, WriteStream out) {
+        auto secure_ui_params = getSecureUIParams();
+        ResponseCode rc = ResponseCode::OK;
+        return write(GetSecureUIParamsResponse(), out, rc, secure_ui_params);
     }
 
     MsgVector<uint8_t> getMessage() {
