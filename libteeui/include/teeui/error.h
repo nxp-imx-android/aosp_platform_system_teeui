@@ -38,6 +38,8 @@ class Error {
         BBoxComputation,
         OutOfMemory,
         Localization,
+        BitmapReadFailed,
+        BitmapOutofRnage,
     };
 
     constexpr Error() noexcept : v_(OK) {}
@@ -99,6 +101,10 @@ class Error {
         return out << "teeui::Error::BBoxComputation";
     case Error::OutOfMemory:
         return out << "teeui::Error::OutOfMemory";
+    case Error::BitmapReadFailed:
+        return out << "teeui::Error::BitmapReadFailed";
+    case Error::BitmapOutofRnage:
+        return out << "teeui::Error::BitmapOutofRnage";
     default:
         return out << "Invalid teeui::Error Code";
     }
