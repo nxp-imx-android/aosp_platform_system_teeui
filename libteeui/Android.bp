@@ -11,6 +11,7 @@ cc_library_static {
         "src/font_rendering.cpp",
         "src/label.cpp",
         "src/utils.cpp",
+        "src/bitmap.cpp",
     ],
     static_libs: [
         "libft2.nodep",
