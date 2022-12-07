@@ -70,9 +70,16 @@ Error LabelImpl::draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds, Line
     auto curLine = lineInfo->begin();
     while (textBegin != text_.end()) {
         if (curLine == lineInfo->end()) return Error::OutOfMemory;
+
+        auto lineEnd = textBegin;
+
+        while (!isNewline(lineEnd.codePoint()) && lineEnd != text_.end()) {
+            lineEnd++;
+        }
+
         Box<pxs> bBox;
         std::tie(error, bBox, curLine->lineText) =
-            findLongestWordSequence(&face, text_t(*textBegin, *text_.end()), bounds);
+            findLongestWordSequence(&face, text_t(*textBegin, *lineEnd), bounds);
         if (error) return error;
 
         pen = {-bBox.x(), pen.y()};
@@ -99,7 +106,12 @@ Error LabelImpl::draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds, Line
         else
             boundingBox = bBox;
 
+        // Set start position for next loop, skipping a newline if found
         textBegin = curLine->lineText.end();
+        if (isNewline(textBegin.codePoint())) {
+            textBegin++;
+        }
+
         pen += {0_px, lineHeight_};
         ++curLine;
     }
