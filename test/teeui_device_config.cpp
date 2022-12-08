@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+#include <fstream>
 #include <getopt.h>
 #include <gtest/gtest.h>
+#include <inttypes.h>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,6 +39,39 @@ void initRenderTest(int argc, char** argv) {
     ::teeui::test::TeeuiRenderTest::Instance()->initFromOptions(argc, argv);
 }
 
+void saveToPpm(const uint32_t* data, uint32_t w, uint32_t h, uint32_t linestride) {
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
+    std::string testname = test_info->name();
+    std::ofstream out;
+
+    out.open(testname + ".ppm", std::ios::binary);
+    if (out.is_open()) {
+        uint32_t linestart = 0;
+
+        /* Write the header */
+        out << "P6\n" << w << " " << h << "\n255\n";
+
+        /* Write binary Pixel data */
+        for (uint32_t line = 0; line < h; line++) {
+            for (uint32_t col = 0; col < w; col++) {
+                const uint32_t color = data[linestart + col];
+                char rgb[3];
+
+                rgb[0] = color >> 16;
+                rgb[1] = color >> 8;
+                rgb[2] = color;
+
+                out.write(rgb, sizeof(rgb));
+            }
+
+            linestart += linestride;
+        }
+
+        out.close();
+    }
+}
+
 int runRenderTest(const char* language, bool magnified, bool inverted,
                   const char* confirmationMessage, const char* layout) {
     std::unique_ptr<ITeeuiExample> sCurrentExample = createExample(
@@ -54,6 +89,11 @@ int runRenderTest(const char* language, bool magnified, bool inverted,
 
     int error =
         sCurrentExample->renderUIIntoBuffer(0, 0, w, h, linestride, buffer.data(), buffer_size);
+
+    if (TeeuiRenderTest::Instance()->saveScreen()) {
+        saveToPpm(buffer.data(), w, h, linestride);
+    }
+
     return error;
 }
 
@@ -97,6 +137,7 @@ void TeeuiRenderTest::initFromOptions(int argc, char** argv) {
                                       {"powerButtonBottom", required_argument, 0, 'b'},
                                       {"volUpButtonTop", required_argument, 0, 'u'},
                                       {"volUpButtonBottom", required_argument, 0, 'v'},
+                                      {"saveScreen", 0, 0, 's'},
                                       {"help", 0, 0, 'h'},
                                       {"?", 0, 0, '?'},
                                       {0, 0, 0, 0}};
@@ -135,6 +176,9 @@ void TeeuiRenderTest::initFromOptions(int argc, char** argv) {
             numeric_value = strtod(optarg, NULL);
             volUpButtonBottomMm = numeric_value;
             break;
+        case 's':
+            saveScreen_ = true;
+            break;
         case '?':
         case 'h':
             std::cout << "Options:" << std::endl;
@@ -155,6 +199,8 @@ void TeeuiRenderTest::initFromOptions(int argc, char** argv) {
                       << std::endl;
             std::cout << "--volUpButtonBottom=<distance from the bottom of the UP power button to "
                          "the top of the screen in mm>"
+                      << std::endl;
+            std::cout << "--saveScreen - save rendered screen to ppm files in working directory"
                       << std::endl;
             exit(0);
         }
