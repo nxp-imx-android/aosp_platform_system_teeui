@@ -57,6 +57,11 @@ class TeeuiRenderTest : public ::testing::Test {
     void createDevice(int widthPx, int heightPx, double dp2px, double mm2px,
                       double powerButtonTopMm, double powerButtonBottomMm, double volUpButtonTopMm,
                       double volUpButtonBottomMm);
+
+    bool saveScreen() { return saveScreen_; }
+
+  private:
+    bool saveScreen_ = false;
 };
 
 }  // namespace test
