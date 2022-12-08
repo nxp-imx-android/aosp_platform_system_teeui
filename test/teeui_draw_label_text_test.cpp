@@ -39,6 +39,14 @@ static constexpr const char kText100Character1Group[] =
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
     "WWWWWWWW";
 
+static constexpr const char kTextMultiLine[] =
+    "Line1\n"
+    "Line2. The next line is blank\n"
+    "\n"
+    "Line4.  This line will wrap onto other lines as it is quite long.\n"
+    "LineN\n"
+    "\n";
+
 class TeeuiDrawLabelTextTest : public ::testing::Test {};
 
 TEST_F(TeeuiDrawLabelTextTest, Test_12_char_8_group_phys_button_layout) {
@@ -58,6 +66,16 @@ TEST_F(TeeuiDrawLabelTextTest, Test_100_char_1_group_phys_button_layout) {
 
 TEST_F(TeeuiDrawLabelTextTest, Test_100_char_1_group_phys_button_layout_magnified) {
     int error = runRenderTest("en", true /* magnified */, false, &kText100Character1Group[0]);
+    ASSERT_EQ(error, 0);
+}
+
+TEST_F(TeeuiDrawLabelTextTest, Test_multi_line_phys_button_layout) {
+    int error = runRenderTest("en", false /* magnified */, false, &kTextMultiLine[0]);
+    ASSERT_EQ(error, 0);
+}
+
+TEST_F(TeeuiDrawLabelTextTest, Test_multi_line_phys_button_layout_magnified) {
+    int error = runRenderTest("en", true /* magnified */, false, &kTextMultiLine[0]);
     ASSERT_EQ(error, 0);
 }
 
