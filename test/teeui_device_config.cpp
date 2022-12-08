@@ -97,36 +97,7 @@ int runRenderTest(const char* language, bool magnified, bool inverted,
     return error;
 }
 
-/*
- * Configures device with test parameters
- * widthPx, heightPx : pixel dimension of devices
- * dp2px : density pixel to pixel
- * mm2px : millimeter to pixel
- * powerButtonTopMm : location of the top of the power button in mm
- * powerButtonBottomMm : location of the bottom of the power button in mm
- * volUpButtonTopMm : location of the top of the up volume button in mm
- * volUpButtonBottomMm : location of the bottom of the up power button in mm
- */
-void TeeuiRenderTest::createDevice(int widthPx, int heightPx, double dp2px, double mm2px,
-                                   double powerButtonTopMm, double powerButtonBottomMm,
-                                   double volUpButtonTopMm, double volUpButtonBottomMm) {
-    DeviceInfo* device_info_ptr = &TeeuiRenderTest::Instance()->device_info;
-    device_info_ptr->width_ = widthPx;
-    device_info_ptr->height_ = heightPx;
-    device_info_ptr->dp2px_ = dp2px;
-    device_info_ptr->mm2px_ = mm2px;
-    device_info_ptr->powerButtonTopMm_ = powerButtonTopMm;
-    device_info_ptr->powerButtonBottomMm_ = powerButtonBottomMm;
-    device_info_ptr->volUpButtonTopMm_ = volUpButtonTopMm;
-    device_info_ptr->volUpButtonBottomMm_ = volUpButtonBottomMm;
-}
-
 void TeeuiRenderTest::initFromOptions(int argc, char** argv) {
-
-    uint width = 0, height = 0;
-    double dp2px = 0, mm2px = 0;
-    double powerBottonTopMm = 0, powerButtonBottomMm = 0;
-    double volUpButtonTopMm = 0, volUpButtonBottomMm = 0;
 
     int option_index = 0;
     static struct option options[] = {{"width", required_argument, 0, 'w'},
@@ -144,37 +115,30 @@ void TeeuiRenderTest::initFromOptions(int argc, char** argv) {
     while (true) {
         int c = getopt_long(argc, argv, "w:l:d:m:t:b:u:v:h?", options, &option_index);
         if (c == -1) break;
-        double numeric_value = 0;
         switch (c) {
         case 'w':
-            width = atoi(optarg);
+            device_info.width_ = strtol(optarg, NULL, 10);
             break;
         case 'l':
-            height = atoi(optarg);
+            device_info.height_ = strtol(optarg, NULL, 10);
             break;
         case 'd':
-            numeric_value = strtod(optarg, NULL);
-            dp2px = numeric_value;
+            device_info.dp2px_ = strtod(optarg, NULL);
             break;
         case 'm':
-            numeric_value = strtod(optarg, NULL);
-            mm2px = numeric_value;
+            device_info.mm2px_ = strtod(optarg, NULL);
             break;
         case 't':
-            numeric_value = strtod(optarg, NULL);
-            powerBottonTopMm = numeric_value;
+            device_info.powerButtonTopMm_ = strtod(optarg, NULL);
             break;
         case 'b':
-            numeric_value = strtod(optarg, NULL);
-            powerButtonBottomMm = numeric_value;
+            device_info.powerButtonBottomMm_ = strtod(optarg, NULL);
             break;
         case 'u':
-            numeric_value = strtod(optarg, NULL);
-            volUpButtonTopMm = numeric_value;
+            device_info.volUpButtonTopMm_ = strtod(optarg, NULL);
             break;
         case 'v':
-            numeric_value = strtod(optarg, NULL);
-            volUpButtonBottomMm = numeric_value;
+            device_info.volUpButtonBottomMm_ = strtod(optarg, NULL);
             break;
         case 's':
             saveScreen_ = true;
@@ -205,8 +169,6 @@ void TeeuiRenderTest::initFromOptions(int argc, char** argv) {
             exit(0);
         }
     }
-    createDevice(width, height, dp2px, mm2px, powerBottonTopMm, powerButtonBottomMm,
-                 volUpButtonTopMm, volUpButtonBottomMm);
 }
 
 }  // namespace test
