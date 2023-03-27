@@ -100,6 +100,9 @@ public:
          if (scale_factor != 1.0) {
              scale_factor_ = scale_factor;
              is_scale_ = true;
+         } else {
+             scale_factor_ = 1.0;
+             is_scale_ = false;
          }
     }
     Error draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds);
@@ -122,16 +125,16 @@ public:
     };
 
 private:
-    bitmap_info_header bih;
-    bitmap_info_header scale_bih;
-    long LineByteWidth;
-    long ScaleLineByteWidth;
+    bitmap_info_header bih = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    bitmap_info_header scale_bih = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    long LineByteWidth = 0;
+    long ScaleLineByteWidth = 0;
     BitmapBuffer bitmap_;
     ScaleBitmapBuffer scale_bitmap_;
-    float scale_factor_;
+    float scale_factor_ = 1.0;
     bool is_scale_ = false;
-    int32_t scale_width;
-    int32_t scale_height;
+    int32_t scale_width = 0;
+    int32_t scale_height = 0;
 };
 
 /**
