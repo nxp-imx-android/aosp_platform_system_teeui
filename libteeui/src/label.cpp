@@ -69,7 +69,11 @@ Error LabelImpl::draw(const PixelDrawer& drawPixel, const Box<pxs>& bounds, Line
 
     auto curLine = lineInfo->begin();
     while (textBegin != text_.end()) {
-        if (curLine == lineInfo->end()) return Error::OutOfMemory;
+        if (curLine == lineInfo->end()) {
+            TEEUI_LOG << "lineInfo filled: lines=" << lineInfo->size_ << " textId=" << textId_
+                      << ENDL;
+            return Error::OutOfMemory;
+        }
 
         auto lineEnd = textBegin;
 
